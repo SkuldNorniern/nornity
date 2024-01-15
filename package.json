@@ -10,8 +10,12 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
+    "@nuxt/content": "latest",
     "nuxt": "^3.9.0",
     "vue": "^3.4.6",
     "vue-router": "^4.2.5"
+  },
+  "dependencies": {
+    "@nuxtjs/markdownit": "^2.0.0"
   }
 }
