@@ -1,164 +1,189 @@
 <template>
-	<div id="app">
-		<header class="blog-header">
-			<div class="container">
-				<h1>Nornity</h1>
-			</div>
-		</header>
-		<main>
-			<AppHeader />
-			<slot />
-			<AppFooter />a
-		</main>
+  <div id="app">
+    <main>
+      <slot />
+    </main>
 
-		<footer class="navbar">
-			<div class="container footer-content">
-				<nav class="footer-nav">
-					<a class="navbar-item" href="/">Home</a>
-					<a class="navbar-item" href="/about">About</a>
-				</nav>
-				<!-- Dark Mode Toggle Button -->
-				<button class="toggle-button" @click="toggleDarkMode">Toggle Dark Mode</button>
-				<div class="footer-info">
-					<p>© 2024 SkuldNorniern. All rights reserved.</p>
-					<p>Follow on <a href="https://github.com/SkuldNorniern">GitHub</a>.</p>
-				</div>
-			</div>
-		</footer>
-	</div>
+    <footer class="navbar">
+      <div class="container footer-content">
+        <nav class="footer-nav">
+          <a class="navbar-item" href="/">Home</a>
+          <a class="navbar-item" href="/about">About</a>
+        </nav>
+        <button class="toggle-button" @click="toggleDarkMode">
+          {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
+        </button>
+        <div class="footer-info">
+          <p>© 2024 SkuldNorniern. All rights reserved.</p>
+          <p>Follow on <a href="https://github.com/SkuldNorniern" target="_blank">GitHub</a>.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
 </template>
 
 <script lang="ts">
 import { ref, onMounted } from 'vue';
 
 export default {
-	setup() {
-		const isDarkMode = ref(false);
+  setup() {
+    const isDarkMode = ref(false);
 
-		onMounted(() => {
-			const darkModeSetting = localStorage.getItem('darkMode');
-			isDarkMode.value = darkModeSetting === 'true';
-			document.body.classList.toggle('dark-mode', isDarkMode.value);
-		});
+    onMounted(() => {
+      const darkModeSetting = localStorage.getItem('darkMode');
+      isDarkMode.value = darkModeSetting === 'true';
+      document.body.classList.toggle('dark-mode', isDarkMode.value);
+    });
 
-		const toggleDarkMode = () => {
-			isDarkMode.value = !isDarkMode.value;
-			document.body.classList.toggle('dark-mode', isDarkMode.value);
-			localStorage.setItem('darkMode', isDarkMode.value.toString());
-		};
+    const toggleDarkMode = () => {
+      isDarkMode.value = !isDarkMode.value;
+      document.body.classList.toggle('dark-mode', isDarkMode.value);
+      localStorage.setItem('darkMode', isDarkMode.value.toString());
+    };
 
-		return { isDarkMode, toggleDarkMode };
-	},
+    return { isDarkMode, toggleDarkMode };
+  },
 };
 </script>
 
 <style scoped>
+* {
+  /* Reset some default styles */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
 #app {
-	display: flex;
-	flex-direction: column;
-	min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-.blog-header {
-	background-color: #f8f9fa;
-	padding: 1rem 0;
-	text-align: center;
-	border-bottom: 1px solid #e1e4e8;
+main {
+  flex-grow: 1;
+  width: 100%;
 }
-
-.blog-header h1 {
-	color: #0366d6;
-	margin: 0;
-	font-size: 2rem;
-}
-
-.main {
-	flex: 1;
-	padding-bottom: 100px; /* Adjust the value to match your footer height */
-}
-
 
 .navbar {
-	background-color: #24292e;
-	color: white;
-	padding: 1rem;
-	position: fixed;
-	bottom: 0;
-	width: 100%;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+  display: flex;
+  width: 100%;
+  background-color: #24292e;
+  color: white;
+  padding: 1rem;
+  position: fixed;
+  bottom: 0;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .footer-content {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	flex-wrap: wrap;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .footer-nav {
-	display: flex;
-	list-style: none;
+  display: flex;
+  list-style: none;
 }
 
 .navbar-item {
-	color: white;
-	text-decoration: none;
-	padding: 0 1rem;
+  color: white;
+  text-decoration: none;
+  padding: 0 1rem;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.navbar-item:hover {
+  color: #00ffff;
 }
 
 .toggle-button {
-	background: none;
-	border: 1px solid white;
-	color: white;
-	padding: 0.5rem 1rem;
-	cursor: pointer;
+  background: none;
+  border: 2px solid white;
+  color: white;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  border-radius: 15px;
+}
+
+.toggle-button:hover {
+  background-color: #0366d6;
+  border-color: #0366d6;
 }
 
 .footer-info {
-	text-align: right;
-}
-
-.footer-info p {
-	color: #9da5b4;
-	margin: 0;
+  text-align: center;
+  padding-top: 1rem;
+  color: #9da5b4;
+  font-size: 0.9rem;
 }
 
 .footer-info a {
-	color: #9da5b4;
-	text-decoration: none;
-	transition: color 0.3s ease;
+  color: #9da5b4;
+  text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 .footer-info a:hover {
-	color: white;
+  color: white;
 }
 
-/* Dark mode styles */
 body.dark-mode {
-	background-color: #0d1117;
-	color: #c9d1d9;
-}
-
-body.dark-mode .blog-header {
-	background-color: #161b22;
-	border-color: #303
-		63d;
+  background-color: #1d1d1d; 
+  color: #c9d1d9;
 }
 
 body.dark-mode .navbar {
-	background-color: #161b22;
+  background-color: #2c2c2e;
 }
 
 body.dark-mode .navbar-item,
 body.dark-mode .toggle-button,
 body.dark-mode .footer-info p,
 body.dark-mode .footer-info a {
-	color: #c9d1d9;
+  color: #c9d1d9;
 }
 
 body.dark-mode .toggle-button {
-	border-color: #c9d1d9;
+  border-color: #c9d1d9;
+}
+
+body.dark-mode .toggle-button:hover {
+  background-color: #58a6ff;
+  border-color: #58a6ff;
+}
+
+@media (max-width: 768px) {
+  .toggle-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-nav {
+    margin-bottom: 1rem;
+  }
 }
 </style>
