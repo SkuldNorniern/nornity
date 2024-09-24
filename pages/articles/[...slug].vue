@@ -17,12 +17,17 @@
     <h1>{{ data.title }}</h1>
     <div class="article-meta">
       <div class="author-info">
-        <img :src="data.authorAvatar" alt="Author's avatar" class="author-avatar">
+        <img :src="data.authorAvatar || '/default/thumbnail.png'" alt="Author's avatar" class="author-avatar">
         <span class="author-name">By {{ data.author }}</span>
       </div>
       <span class="reading-time">{{ readingTime }} min read</span>
     </div>
-    <ContentDoc :document="data" />
+    <ContentRenderer :value="data" />
+  </div>
+  <div v-else-if="error">
+    <h1>Error</h1>
+    <p>{{ error.message }}</p>
+    <p>Slug: {{ slug }}</p>
   </div>
   <div v-else class="loading-container">
     <div class="loading-spinner"></div>
@@ -31,18 +36,39 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, watch, nextTick } from 'vue';
+import { ref, watch } from 'vue';
 import { useAsyncData } from 'nuxt/app';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
-const { data, error } = await useAsyncData('page-data', () => queryContent(route.params.slug).findOne());
+const slug = Array.isArray(route.params.slug) ? route.params.slug.join('/') : route.params.slug;
+
+console.log('Current slug:', slug); // Debug log
+
+const { data, error } = await useAsyncData('page-data', async () => {
+  console.log('Querying content for slug:', slug); // Debug log
+  const article = await queryContent('articles')
+    .where({ 
+      slug: slug,
+      _extension: 'md'
+    })
+    .findOne();
+  
+  console.log('Query result:', article); // Debug log
+  
+  if (!article) {
+    throw new Error('Article not found');
+  }
+  
+  return article;
+});
+
 const contentLoaded = ref(false);
 const readingTime = ref('');
 
 watch(data, async () => {
   if (data.value?.body) {
-    const extractText = (nodes) => {
+    const extractText = (nodes: any[]): string => {
       if (!nodes || !Array.isArray(nodes)) {
         return '';
       }
@@ -83,6 +109,7 @@ watch(data, async () => {
   max-width: 800px;
   margin: 60px auto;
   padding: 2.5rem;
+  margin-bottom: 100px;
   background: var(--background-color);
   color: var(--text-color);
   box-shadow: 0 4px 15px var(--shadow-color);

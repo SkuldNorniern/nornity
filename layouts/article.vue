@@ -26,6 +26,8 @@ export default {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  margin-bottom: 200px;
+  padding-bottom: 200px;
   background-color: var(--background-color);
   color: var(--text-color);
 }

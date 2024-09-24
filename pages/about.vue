@@ -18,8 +18,8 @@
 <script lang="ts">
 export default {
   methods: {
-    rotateCard(event) {
-      const card = event.currentTarget;
+    rotateCard(event: MouseEvent) {
+      const card = event.currentTarget as HTMLElement;
       const { width, height, left, top } = card.getBoundingClientRect();
       const l = event.clientX - (left + window.scrollX);
       const t = event.clientY - (top + window.scrollY);
@@ -30,8 +30,8 @@ export default {
 
       card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
     },
-    resetCard(event) {
-      event.currentTarget.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+    resetCard(event: MouseEvent) {
+      (event.currentTarget as HTMLElement).style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
     }
   }
 };

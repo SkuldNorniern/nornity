@@ -4,21 +4,25 @@
       <slot />
     </main>
 
-    <footer class="navbar">
+    <!-- <footer class="navbar">
       <div class="container footer-content">
         <nav class="footer-nav">
           <a class="navbar-item" href="/">Home</a>
           <a class="navbar-item" href="/about">About</a>
-        </nav>
-        <button class="toggle-button" @click="toggleDarkMode">
-          {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
-        </button>
+        </nav>  
         <div class="footer-info">
           <p>© 2024 SkuldNorniern. All rights reserved.</p>
           <p>Follow on <a href="https://github.com/SkuldNorniern" target="_blank">GitHub</a>.</p>
         </div>
       </div>
-    </footer>
+    </footer> -->
+
+    <!-- Dark mode toggle as a floating icon -->
+    <div class="dark-mode-toggle">
+      <button class="toggle-button" @click="toggleDarkMode">
+        <i :class="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -47,6 +51,8 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+
 * {
   /* Reset some default styles */
   margin: 0;
@@ -111,12 +117,18 @@ main {
   background: none;
   border: 2px solid white;
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem;
   cursor: pointer;
-  font-size: 0.9rem;
-  letter-spacing: 0.5px;
+  font-size: 1.2rem;
   transition: background-color 0.3s ease, border-color 0.3s ease;
-  border-radius: 15px;
+  border-radius: 50%;
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .toggle-button:hover {
@@ -168,22 +180,30 @@ body.dark-mode .toggle-button:hover {
 
 @media (max-width: 768px) {
   .toggle-button {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
+    padding: 0.4rem;
+    font-size: 1rem;
   }
 
   .navbar {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center; /* Center align items */
+    padding: 1rem;
   }
 
   .footer-content {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center; /* Center align items */
+    text-align: center; /* Center text */
   }
 
   .footer-nav {
     margin-bottom: 1rem;
+    gap: 1rem;
+    justify-content: center; /* Center navigation items */
+  }
+
+  .footer-info {
+    padding-top: 0.5rem; /* Reduce padding for better spacing */
   }
 }
 </style>

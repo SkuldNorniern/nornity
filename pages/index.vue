@@ -1,44 +1,70 @@
 <template>
   <div class="container">
-    <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="hero-content">
-        <h1 class="hero-title">Welcome to Nornity</h1>
-        <p class="hero-subtitle">Discover the latest articles and explore our products</p>
+    <!-- Navigation -->
+    <nav class="navigation">
+      <div class="search-container">
+        <input type="text" placeholder="Search articles..." class="search-input" v-model="searchQuery" @input="performSearch" />
       </div>
-    </section>
+    </nav>
 
-    <!-- Content Card -->
-    <section class="content-card">
-      <!-- Search Bar -->
-      <div class="search-bar">
-        <input
-          type="text"
-          v-model="searchQuery"
-          placeholder="Search articles..."
-          class="search-input"
-          aria-label="Search articles"
-        />
-      </div>
-
-      <!-- Search Results or Featured Content -->
-      <div v-if="searchQuery">
-        <SearchResults :filteredArticles="filteredArticles" />
-      </div>
-      <div v-else>
-        <!-- Featured Articles -->
-        <section class="featured-section">
-          <h2 class="section-title">Featured Articles</h2>
-          <FeaturedArticles :articles="featuredArticles" />
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="left-column">
+        <!-- Featured Article -->
+        <section class="featured-article" v-for="lastarticle in latestArticle" :key="latestArticle.slug">
+          <div class="floating-orb"></div>
+          
+          <div class="article-content">
+            <div class="article-meta">Latest Article</div>
+            <h1 class="article-title">{{ lastarticle.title }}</h1>
+            <p>{{ lastarticle.date }}</p>
+            <p>{{ truncateDescription(lastarticle.description, 100) }}</p>
+            <a :href="`/articles/${lastarticle.slug}`" class="read-more">Read article</a>
+          </div>
         </section>
 
-        <!-- Featured Products -->
-        <section class="products-section">
-          <h2 class="section-title">Featured Products</h2>
-          <FeaturedProducts :products="featuredProducts" />
+        <!-- About Section (Replaced Trending Posts) -->
+        <section class="featured-article about-section">
+          <div class="article-content">
+            <div class="about-header">
+              <img src="https://avatars.githubusercontent.com/u/43695854?v=4" alt="Profile Picture" class="profile-picture" />
+              <h1 class="article-title">Skuld Norniern</h1>
+            </div>
+            <div class="social-links">
+              <a href="https://github.com/SkuldNorniern" target="_blank">GitHub</a>
+            </div>
+            <div class="about-me">
+              <h2>About Me</h2>
+              <p>Welcome to my blog! Here you can find information about my dev log, and my story.</p>
+              <p>Available Stacks: C/C++, Rust, Go, Python</p>
+            </div>
+          </div>
+          <div class="floating-decorations">
+            <div class="decoration decoration-1"></div>
+            <div class="decoration decoration-2"></div>
+            <div class="decoration decoration-3"></div>
+          </div>
         </section>
       </div>
-    </section>
+
+      <div class="right-column">
+        <!-- Recommended Articles -->
+        <section class="recommended-articles">
+          <h2 class="section-title">Recommended</h2>
+          <div class="article-grid">
+            <!-- Article cards go here -->
+            <article class="article-card" v-for="article in articles" :key="article.slug">
+              <!-- Article content -->
+              <h3>{{ article.title }}</h3>
+              <p>{{ article.date }}</p>
+              <p>{{ truncateDescription(article.description, 100) }}</p>
+              <a :href="`/articles/${article.slug}`" class="read-more-light">Read article</a>
+            </article>
+            <!-- Repeat for other articles -->
+          </div>
+        </section>
+      </div>
+    </main>
   </div>
 </template>
 
@@ -57,20 +83,42 @@ export default defineComponent({
   },
   setup() {
     const searchQuery = ref('');
-    const articles = ref<Array<{ title: string; [key: string]: any }>>([]);
+    const articles = ref<Array<{ title: string; slug: string; date: string; [key: string]: any }>>([]);
+    const latestArticle = ref<Array<{ title: string; slug: string; date: string; [key: string]: any }>>([]);
     const filteredArticles = ref<Array<{ title: string; [key: string]: any }>>([]);
     const featuredArticles = ref<Array<{ title: string; [key: string]: any }>>([]);
     const featuredProducts = ref<Array<{ name: string; [key: string]: any }>>([]);
     const isLoading = ref(false);
+    // Removed trendingPosts
 
     const fetchArticles = async () => {
       try {
         isLoading.value = true;
         // Fetch all articles using queryContent
-        articles.value = await queryContent('articles').find();
-        console.log('All Articles:', articles.value);
+        const fetchedArticles = await queryContent('articles')
+          .where({ _extension: 'md' })
+          .find();
+        articles.value = fetchedArticles;
+        console.log('Article List:', articles.value);
       } catch (error) {
         console.error('Error fetching articles:', error);
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const LatestArticle = async () => {
+      try {
+        isLoading.value = true;
+        const fetchedArticles = await queryContent('articles')
+          .where({ _extension: 'md' })
+          .sort({ date: -1 })
+          .limit(1)
+          .find();
+        latestArticle.value = fetchedArticles;
+        console.log('Latest Article:', latestArticle.value);
+      } catch (error) {
+        console.error('Error fetching latest article:', error);
       } finally {
         isLoading.value = false;
       }
@@ -102,6 +150,8 @@ export default defineComponent({
       }
     };
 
+    // Removed fetchTrendingPosts
+
     const searchArticles = () => {
       if (searchQuery.value.trim() === '') {
         filteredArticles.value = [];
@@ -119,24 +169,38 @@ export default defineComponent({
       searchArticles();
     };
 
+    // Removed rotateCard and resetCard
+
     watch(searchQuery, searchArticles, { immediate: true });
 
     onMounted(async () => {
       await Promise.all([
         fetchArticles(),
+        LatestArticle(),
         fetchFeaturedArticles(),
         fetchFeaturedProducts(),
+        // Removed fetchTrendingPosts
       ]);
     });
+
+    const truncateDescription = (description: string, maxLength: number) => {
+      if (description.length <= maxLength) {
+        return description;
+      }
+      return description.slice(0, maxLength) + '...';
+    };
 
     return {
       searchQuery,
       articles,
+      latestArticle,
       filteredArticles,
       featuredArticles,
       featuredProducts,
       isLoading,
       performSearch,
+      truncateDescription,
+      // Removed trendingPosts, rotateCard, resetCard
     };
   },
 });
@@ -144,229 +208,443 @@ export default defineComponent({
 
 <style scoped>
 :root {
-  --primary-color: #00c9ff;
+  --primary-color: #8a2be2;
   --secondary-color: #f0f0f0;
-  --background-color: #1a1a1a;
+  --background-color: #ffffff;
+  --text-color: #333333;
   --accent-color: #ff4081;
-  --font-family: 'Roboto', sans-serif;
-  --transition-speed: 0.3s;
+  --font-family: 'Inter', sans-serif;
 }
 
 .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   font-family: var(--font-family);
-  color: var(--secondary-color);
   background-color: var(--background-color);
+  color: var(--text-color);
   min-height: 100vh;
   padding: 20px;
+  margin-bottom: 150px;
   box-sizing: border-box;
 }
 
-.hero-section {
-  width: 100%;
-  padding: 120px 20px;
-  text-align: center;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  color: white;
-  border-radius: 15px;
-  margin-bottom: 50px;
-  box-shadow: 0 12px 24px rgba(0, 201, 255, 0.2);
+.navigation {
   display: flex;
-  align-items: center;
   justify-content: center;
-}
-
-.hero-content {
-  max-width: 800px;
-  animation: fadeIn 1s ease-in-out;
-}
-
-.hero-title {
-  font-size: 3.5em;
-  color: var(--primary-color);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: 20px;
-  animation: slideInDown 1s ease-out;
-}
-
-.hero-subtitle {
-  color: #d1d1d1;
-  font-size: 1.5em;
-  line-height: 1.5;
-  animation: slideInUp 1s ease-out;
-}
-
-.content-card {
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(15px);
-  border-radius: 20px;
-  padding: 4rem;
-  box-shadow: 0 16px 32px rgba(0, 201, 255, 0.15);
-  text-align: left;
-  transition: all var(--transition-speed) ease;
-  
-  /* Dynamic width */
-  /* width: 90%; */
-  max-width: 1100px;
-  /* margin: 40px auto; */
-}
-
-.search-bar {
-  display: flex;
   align-items: center;
-  margin-bottom: 50px;
+  padding: 20px 0;
+}
+
+.search-container {
   position: relative;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  justify-content: center;
 }
 
 .search-input {
-  flex: 1;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 2px solid transparent;
-  padding: 15px 20px;
-  font-size: 16px;
-  color: var(--secondary-color);
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 20px;
+  padding-right: 40px;
+  border: 2px solid var(--primary-color);
   border-radius: 30px;
-  transition: background-color var(--transition-speed), border-color var(--transition-speed);
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .search-input:focus {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: var(--primary-color);
   outline: none;
-}
-
-.search-button {
-  background-color: var(--primary-color);
-  color: var(--background-color);
-  border: none;
-  border-radius: 50%;
-  padding: 12px;
-  margin-left: -50px;
-  cursor: pointer;
-  transition: background-color var(--transition-speed), transform var(--transition-speed);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.search-button:hover {
-  background-color: var(--accent-color);
-  transform: scale(1.05);
+  box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.3);
+  animation: pulse 1.5s infinite;
 }
 
 .search-icon {
-  width: 20px;
-  height: 20px;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--primary-color);
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(138, 43, 226, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(138, 43, 226, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(138, 43, 226, 0);
+  }
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 40px;
+  position: relative;
+}
+
+.left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.right-column {
+  position: relative;
+}
+
+.featured-article {
+  background: linear-gradient(135deg, #8a2be2, #4a0e8f);
+  color: white;
+  padding: 40px;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.article-content {
+  position: relative;
+  z-index: 2;
+}
+
+.article-meta {
+  font-size: 12px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.article-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.read-more {
+  display: inline-block;
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border: 1px solid white;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.read-more-light {
+  display: inline-block;
+  color: black;
+  text-decoration: none;
+  padding: 8px 16px;
+  border: 1px solid black;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.floating-orb {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, #b19cd9, #8a2be2);
+  border-radius: 50%;
+  filter: blur(20px);
+  opacity: 0.7;
+  z-index: 1;
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(50%, 25%); }
+  50% { transform: translate(0, 50%); }
+  75% { transform: translate(-50%, 25%); }
+}
+
+.recommended-articles {
+  background-color: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .section-title {
-  font-size: 2.5em;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.article-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.article-card {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.about {
+  font-family: var(--font-family);
+  color: var(--text-color);
+  background-color: var(--background-color);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
+  text-align: left;
+  transition: all 0.5s ease;
+  max-width: 600px;
+  width: 100%;
+}
+
+.profile-card:hover {
+  box-shadow: 0 16px 64px rgba(0, 255, 255, 0.2);
+}
+
+.profile-card h1 {
   color: var(--primary-color);
-  margin-bottom: 30px;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
   text-transform: uppercase;
   letter-spacing: 2px;
-  border-bottom: 2px solid var(--primary-color);
-  padding-bottom: 10px;
-  animation: fadeInUp 1s ease-in-out;
 }
 
-.featured-section,
-.products-section {
-  margin-top: 60px;
+.profile-card h2 {
+  color: var(--primary-color);
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-@media (max-width: 1024px) {
-  .hero-section {
-    padding: 80px 20px;
-  }
-  .hero-title {
-    font-size: 3em;
-  }
-  .hero-subtitle {
-    font-size: 1.3em;
-  }
+.profile-card p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  font-size: 1.1rem;
 }
 
+.social-links {
+  display: flex;
+  justify-content: start;
+  gap: 20px;
+  margin-bottom: 2rem;
+}
+
+.social-links a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 1.2rem;
+  transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+  color: #ffffff;
+}
+
+.about-me {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 2rem;
+}
+
+.about-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile-picture {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+
+.about-section {
+  background: linear-gradient(135deg, #ff7e5f, #feb47b);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.about-section .article-content {
+  position: relative;
+  z-index: 2;
+}
+
+.about-section .article-meta {
+  font-size: 12px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.about-section .article-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.about-section .social-links a {
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border: 1px solid white;
+  border-radius: 20px;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.about-section .social-links a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.floating-decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.decoration {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: float 20s ease-in-out infinite;
+}
+
+.decoration-1 {
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.3);
+  top: 10%;
+  left: 20%;
+}
+
+.decoration-2 {
+  width: 150px;
+  height: 150px;
+  background: rgba(255, 255, 255, 0.2);
+  top: 50%;
+  left: 70%;
+}
+
+.decoration-3 {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.4);
+  top: 80%;
+  left: 30%;
+}
+
+.trending-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.trending-list li {
+  margin-bottom: 10px;
+}
+
+.trending-list a {
+  color: var(--text-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.trending-list a:hover {
+  color: var(--primary-color);
+}
+
+/* Add responsive styles as needed */
 @media (max-width: 768px) {
-  .hero-section {
-    padding: 60px 15px;
+  .main-content {
+    grid-template-columns: 1fr;
   }
-  .hero-title {
-    font-size: 2.5em;
+
+  .left-column,
+  .right-column {
+    gap: 20px;
   }
-  .hero-subtitle {
-    font-size: 1.1em;
-  }
-  .search-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .search-button {
-    margin-left: 0;
-    margin-top: 15px;
-    align-self: flex-end;
+
+  .floating-orb {
+    width: 100px;
+    height: 100px;
   }
 }
 
-@media (max-width: 480px) {
-  .hero-section {
-    padding: 40px 10px;
-  }
-  .hero-title {
-    font-size: 2em;
-  }
-  .hero-subtitle {
-    font-size: 1em;
-  }
-  .section-title {
-    font-size: 2em;
-  }
+
+.floating-orb {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, #b19cd9, #8a2be2);
+  border-radius: 50%;
+  filter: blur(20px);
+  opacity: 0.7;
+  z-index: 1;
+  animation: float 20s ease-in-out infinite;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(50%, 25%); }
+  50% { transform: translate(0, 50%); }
+  75% { transform: translate(-50%, 25%); }
 }
 
-@keyframes slideInDown {
-  from {
-    transform: translateY(-30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+.recommended-articles {
+  background-color: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-@keyframes slideInUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+.article-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.article-card {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+/* Add responsive styles as needed */
+@media (max-width: 768px) {
+  .main-content {
+    grid-template-columns: 1fr;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .left-column,
+  .right-column {
+    gap: 20px;
+  }
+
+  .floating-orb {
+    width: 100px;
+    height: 100px;
   }
 }
 </style>
