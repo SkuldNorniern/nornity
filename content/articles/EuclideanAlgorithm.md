@@ -6,8 +6,6 @@ date: "2024-01-16"
 author: "Skuld Norniern"
 ---
 
-# Euclidean Algorithm
-
 First of all, What is a Euclidean Algorithm?
 
 Euclidean Algorithm is a algorithm that gets the greatest common divisor
