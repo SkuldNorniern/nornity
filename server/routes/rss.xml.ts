@@ -28,6 +28,8 @@ export default defineEventHandler(async (event) => {
         url: `${URL}/articles/${article.slug}`,
         date: new Date(article.date),
         description: article.description,
+        content: article.content,
+        author: article.author,
         // You can add more fields here if needed
       });
     }
