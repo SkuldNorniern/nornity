@@ -69,11 +69,13 @@ html, body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 main {
   flex-grow: 1;
   width: 100%;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .navbar {
@@ -114,13 +116,13 @@ main {
 }
 
 .toggle-button {
-  background: none;
-  border: 2px solid white;
+  background-color: #4B0082; /* Dark violet for light mode */
+  border: none;
   color: white;
   padding: 0.5rem;
   cursor: pointer;
   font-size: 1.2rem;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, opacity 0.3s ease;
   border-radius: 50%;
   position: fixed;
   bottom: 2rem;
@@ -132,8 +134,7 @@ main {
 }
 
 .toggle-button:hover {
-  background-color: #0366d6;
-  border-color: #0366d6;
+  opacity: 0.8; /* Add a hover effect */
 }
 
 .footer-info {
@@ -156,6 +157,7 @@ main {
 body.dark-mode {
   background-color: #1d1d1d; 
   color: #c9d1d9;
+  transition: background-color 1s ease, color 1s ease;
 }
 
 body.dark-mode .navbar {
@@ -170,12 +172,16 @@ body.dark-mode .footer-info a {
 }
 
 body.dark-mode .toggle-button {
+  background-color: #ADD8E6; /* Light blue for dark mode */
+  color: #1d1d1d; /* Dark text color for better contrast */
+}
+
+body.dark-mode .toggle-button {
   border-color: #c9d1d9;
 }
 
 body.dark-mode .toggle-button:hover {
-  background-color: #58a6ff;
-  border-color: #58a6ff;
+  opacity: 0.8; /* Add a hover effect */
 }
 
 @media (max-width: 768px) {
@@ -205,5 +211,10 @@ body.dark-mode .toggle-button:hover {
   .footer-info {
     padding-top: 0.5rem; /* Reduce padding for better spacing */
   }
+}
+
+/* Add this block near the top of your style section */
+body, body *, .navbar, .navbar-item, .toggle-button, .footer-info p, .footer-info a {
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 </style>

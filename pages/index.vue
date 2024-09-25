@@ -4,6 +4,10 @@
     <nav class="navigation">
       <div class="search-container">
         <input type="text" placeholder="Search articles..." class="search-input" v-model="searchQuery" @input="performSearch" />
+        <!-- Floating Search Results Panel -->
+        <div class="floating-search-results" v-if="filteredArticles.length">
+          <SearchResults :filteredArticles="filteredArticles" :searchQuery="searchQuery"></SearchResults>
+        </div>
       </div>
     </nav>
 
@@ -30,15 +34,20 @@
               <img src="https://avatars.githubusercontent.com/u/43695854?v=4" alt="Profile Picture" class="profile-picture" />
               <h1 class="article-title">Skuld Norniern</h1>
             </div>
-            <div class="social-links">
-              <a href="https://github.com/SkuldNorniern" target="_blank">GitHub</a>
-            </div>
+            
             <div class="about-me">
               <h2>About Me</h2>
               <p>Welcome to my blog! Here you can find information about my dev log, and my story.</p>
               <p>Available Stacks: C/C++, Rust, Go, Python</p>
             </div>
+
+            <div class="social-links">
+              <a href="https://github.com/SkuldNorniern" target="_blank">GitHub</a>
+              <a href="https://twitter.com/SkuldNorniern" target="_blank">Twitter</a>
+              <!-- <a href="https://www.linkedin.com/in//" target="_blank">LinkedIn</a> -->
+            </div>
           </div>
+          
           <div class="floating-decorations">
             <div class="decoration decoration-1"></div>
             <div class="decoration decoration-2"></div>
@@ -51,35 +60,36 @@
         <!-- Recommended Articles -->
         <section class="recommended-articles">
           <h2 class="section-title">Recommended</h2>
-          <div class="article-grid">
+          <div class="article-grid" ref="articleGrid">
             <!-- Article cards go here -->
-            <article class="article-card" v-for="article in articles" :key="article.slug">
+            <article class="article-card" v-for="article in displayedArticles" :key="article.slug">
               <!-- Article content -->
               <h3>{{ article.title }}</h3>
               <p>{{ article.date }}</p>
               <p>{{ truncateDescription(article.description, 100) }}</p>
               <a :href="`/articles/${article.slug}`" class="read-more-light">Read article</a>
             </article>
-            <!-- Repeat for other articles -->
           </div>
         </section>
+
+        
       </div>
+      
     </main>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, onMounted } from 'vue';
+import { defineComponent, ref, watch, onMounted, computed } from 'vue';
 import FeaturedArticles from '@/components/FeaturedArticles.vue';
 import FeaturedProducts from '@/components/FeaturedProducts.vue';
-import SearchResults from '@/components/SearchResults.vue';
-// import { queryContent } from '@nuxt/content';
+import SearchResults from '@/components/SearchResults.vue'; // Correct import
 
 export default defineComponent({
   components: {
     FeaturedArticles,
     FeaturedProducts,
-    SearchResults,
+    SearchResults, // Correct registration
   },
   setup() {
     const searchQuery = ref('');
@@ -89,12 +99,12 @@ export default defineComponent({
     const featuredArticles = ref<Array<{ title: string; [key: string]: any }>>([]);
     const featuredProducts = ref<Array<{ name: string; [key: string]: any }>>([]);
     const isLoading = ref(false);
-    // Removed trendingPosts
+    const articleGrid = ref(null);
+    const displayedArticles = ref([]);
 
     const fetchArticles = async () => {
       try {
         isLoading.value = true;
-        // Fetch all articles using queryContent
         const fetchedArticles = await queryContent('articles')
           .where({ _extension: 'md' })
           .find();
@@ -127,7 +137,6 @@ export default defineComponent({
     const fetchFeaturedArticles = async () => {
       try {
         isLoading.value = true;
-        // Fetch featured articles
         featuredArticles.value = await queryContent('featured-articles').find();
         console.log('Featured Articles:', featuredArticles.value);
       } catch (error) {
@@ -140,7 +149,6 @@ export default defineComponent({
     const fetchFeaturedProducts = async () => {
       try {
         isLoading.value = true;
-        // Fetch featured products
         featuredProducts.value = await queryContent('featured-products').find();
         console.log('Featured Products:', featuredProducts.value);
       } catch (error) {
@@ -149,8 +157,6 @@ export default defineComponent({
         isLoading.value = false;
       }
     };
-
-    // Removed fetchTrendingPosts
 
     const searchArticles = () => {
       if (searchQuery.value.trim() === '') {
@@ -169,7 +175,15 @@ export default defineComponent({
       searchArticles();
     };
 
-    // Removed rotateCard and resetCard
+    const updateDisplayedArticles = () => {
+      if (!articleGrid.value) return;
+
+      const gridHeight = articleGrid.value.clientHeight;
+      const articleHeight = 150; // Approximate height of each article card
+      const maxArticles = Math.floor(gridHeight / articleHeight);
+
+      displayedArticles.value = articles.value.slice(0, maxArticles);
+    };
 
     watch(searchQuery, searchArticles, { immediate: true });
 
@@ -179,8 +193,10 @@ export default defineComponent({
         LatestArticle(),
         fetchFeaturedArticles(),
         fetchFeaturedProducts(),
-        // Removed fetchTrendingPosts
       ]);
+
+      updateDisplayedArticles();
+      window.addEventListener('resize', updateDisplayedArticles);
     });
 
     const truncateDescription = (description: string, maxLength: number) => {
@@ -200,7 +216,8 @@ export default defineComponent({
       isLoading,
       performSearch,
       truncateDescription,
-      // Removed trendingPosts, rotateCard, resetCard
+      articleGrid,
+      displayedArticles,
     };
   },
 });
@@ -236,16 +253,14 @@ export default defineComponent({
 .search-container {
   position: relative;
   width: 100%;
-  max-width: 500px;
+  max-width: 450px; /* Match the width in the image */
   display: flex;
   justify-content: center;
 }
 
 .search-input {
   width: 100%;
-  max-width: 500px;
   padding: 12px 20px;
-  padding-right: 40px;
   border: 2px solid var(--primary-color);
   border-radius: 30px;
   font-size: 16px;
@@ -257,15 +272,6 @@ export default defineComponent({
   outline: none;
   box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.3);
   animation: pulse 1.5s infinite;
-}
-
-.search-icon {
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--primary-color);
-  pointer-events: none;
 }
 
 @keyframes pulse {
@@ -363,7 +369,8 @@ export default defineComponent({
 }
 
 .recommended-articles {
-  background-color: white;
+  background: linear-gradient(135deg, #ffffff, #cccccc);;
+  color: black;
   border-radius: 20px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -376,12 +383,16 @@ export default defineComponent({
 }
 
 .article-grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 20px;
+  height: calc(100vh - 200px); /* Adjust this value based on your layout */
+  overflow-y: auto;
 }
 
 .article-card {
-  background-color: #f9f9f9;
+  flex-shrink: 0;
+  background-color: #e2e9df;
   border-radius: 10px;
   padding: 15px;
 }
@@ -453,24 +464,35 @@ export default defineComponent({
 }
 
 .about-me {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 2rem;
+  margin-top: 20px;
+}
+
+.about-me h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.social-links {
+  margin-top: 20px;
 }
 
 .about-header {
   display: flex;
   align-items: center;
   gap: 20px;
+  margin-bottom: 20px;
 }
 
 .profile-picture {
   width: 80px;
   height: 80px;
   border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .about-section {
-  background: linear-gradient(135deg, #ff7e5f, #feb47b);
+  background: linear-gradient(135deg, #ff5f7a, #d97bfe);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 40px;
   border-radius: 20px;
@@ -492,7 +514,7 @@ export default defineComponent({
 .about-section .article-title {
   font-size: 28px;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin: 0;
 }
 
 .about-section .social-links a {
@@ -586,65 +608,18 @@ export default defineComponent({
     height: 100px;
   }
 }
-
-
-.floating-orb {
+.floating-search-results {
   position: absolute;
-  width: 150px;
-  height: 150px;
-  background: radial-gradient(circle, #b19cd9, #8a2be2);
-  border-radius: 50%;
-  filter: blur(20px);
-  opacity: 0.7;
-  z-index: 1;
-  animation: float 20s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translate(0, 0); }
-  25% { transform: translate(50%, 25%); }
-  50% { transform: translate(0, 50%); }
-  75% { transform: translate(-50%, 25%); }
-}
-
-.recommended-articles {
+  margin-top: 50px;
+  /* top: 60%; */
+  /* left: 50%; */
+  /* transform: translate(-50%, -50%); */
+  display: flex;
+  justify-content: center;
   background-color: white;
   border-radius: 20px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.section-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-
-.article-grid {
-  display: grid;
-  gap: 20px;
-}
-
-.article-card {
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  padding: 15px;
-}
-
-/* Add responsive styles as needed */
-@media (max-width: 768px) {
-  .main-content {
-    grid-template-columns: 1fr;
-  }
-
-  .left-column,
-  .right-column {
-    gap: 20px;
-  }
-
-  .floating-orb {
-    width: 100px;
-    height: 100px;
-  }
+  z-index: 1000;
 }
 </style>
