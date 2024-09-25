@@ -11,11 +11,14 @@
   },
   "devDependencies": {
     "@nuxt/content": "latest",
-    "nuxt": "^3.13.0",
+    "@nuxt/image": "^1.8.0",
+    "@nuxt/kit": "3.13.2",
+    "nuxt": "^3.13.2",
     "vue": "latest",
     "vue-router": "latest"
   },
   "dependencies": {
-    "@nuxtjs/markdownit": "^2.0.0"
+    "@nuxtjs/markdownit": "^2.0.0",
+    "rss": "^1.2.2"
   }
 }

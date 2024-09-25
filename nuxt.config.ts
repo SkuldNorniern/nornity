@@ -1,12 +1,13 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: {
-    enabled: true,
+    enabled: false,
 
     timeline: {
       enabled: true
     }
   },
+
   content: {
     // Other Nuxt Content configurations...
     highlight: {
@@ -15,5 +16,20 @@ export default defineNuxtConfig({
       langs: ['rust', 'python', 'c', 'cpp']
     }
   },
- modules: ['@nuxt/content']
+
+  modules: ['@nuxt/content', '@nuxt/image'],
+
+  nitro: {
+    prerender: {
+      routes: ["/rss.xml"],
+    },
+  },
+
+  vite: {
+    server: {
+      hmr: false,
+    },
+  },
+  telemetry: false,
+  compatibilityDate: '2024-09-25',
 })
