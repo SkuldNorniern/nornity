@@ -23,6 +23,13 @@
         <i :class="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
       </button>
     </div>
+
+    <!-- Go Back floating button -->
+    <div class="go-back-button">
+      <button class="back-button" @click="goBack">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -45,7 +52,11 @@ export default {
       localStorage.setItem('darkMode', isDarkMode.value.toString());
     };
 
-    return { isDarkMode, toggleDarkMode };
+    const goBack = () => {
+      window.history.back();
+    };
+
+    return { isDarkMode, toggleDarkMode, goBack };
   },
 };
 </script>
@@ -217,4 +228,43 @@ body.dark-mode .toggle-button:hover {
 body, body *, .navbar, .navbar-item, .toggle-button, .footer-info p, .footer-info a {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+.go-back-button {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  z-index: 1000;
+}
+
+.back-button {
+  background-color: #4B0082; /* Dark violet for light mode */
+  border: none;
+  color: white;
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.3s ease, color 0.3s ease, opacity 0.3s ease;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-button:hover {
+  opacity: 0.8; /* Add a hover effect */
+}
+
+body.dark-mode .back-button {
+  background-color: #ADD8E6; /* Light blue for dark mode */
+  color: #1d1d1d; /* Dark text color for better contrast */
+}
+
+@media (max-width: 768px) {
+  .back-button {
+    padding: 0.4rem;
+    font-size: 1rem;
+  }
+}
+
+
 </style>
