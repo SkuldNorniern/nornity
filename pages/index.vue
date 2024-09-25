@@ -48,6 +48,7 @@
             </div>
           </div>
           
+          <!-- Floating Decorations -->
           <div class="floating-decorations">
             <div class="decoration decoration-1"></div>
             <div class="decoration decoration-2"></div>
