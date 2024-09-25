@@ -64,13 +64,17 @@
           <div class="article-grid" ref="articleGrid">
             <!-- Article cards go here -->
             <article class="article-card" v-for="article in displayedArticles" :key="article.slug">
-              <!-- Article content -->
-              <h3>{{ article.title }}</h3>
-              <p>{{ article.date }}</p>
-              <p>{{ truncateDescription(article.description, 100) }}</p>
+              <div class="article-content">
+                <h3>{{ article.title }}</h3>
+                <p class="article-date">{{ article.date }}</p>
+                <p class="article-description">{{ truncateDescription(article.description, 100) }}</p>
+              </div>
               <a :href="`/articles/${article.slug}`" class="read-more-light">Read article</a>
             </article>
           </div>
+          <button v-if="displayedArticles.length < articles.length" @click="loadMoreArticles" class="load-more-button">
+            Load More
+          </button>
         </section>
 
         
@@ -102,6 +106,7 @@ export default defineComponent({
     const isLoading = ref(false);
     const articleGrid = ref(null);
     const displayedArticles = ref([]);
+    const articlesPerPage = ref(6); // Default number of articles to display
 
     const fetchArticles = async () => {
       try {
@@ -177,13 +182,22 @@ export default defineComponent({
     };
 
     const updateDisplayedArticles = () => {
-      if (!articleGrid.value) return;
+      if (!articleGrid.value || articles.value.length === 0) return;
 
       const gridHeight = articleGrid.value.clientHeight;
       const articleHeight = 150; // Approximate height of each article card
-      const maxArticles = Math.floor(gridHeight / articleHeight);
+      const columns = Math.floor(articleGrid.value.clientWidth / 250); // Assuming 250px min-width for cards
+      const rows = Math.floor(gridHeight / articleHeight);
+      
+      const initialCount = columns * rows;
+      displayedArticles.value = articles.value.slice(0, initialCount);
+      console.log('Displayed articles:', displayedArticles.value); // Add this line for debugging
+    };
 
-      displayedArticles.value = articles.value.slice(0, maxArticles);
+    const loadMoreArticles = () => {
+      const currentLength = displayedArticles.value.length;
+      const newArticles = articles.value.slice(currentLength, currentLength + articlesPerPage.value);
+      displayedArticles.value = [...displayedArticles.value, ...newArticles];
     };
 
     watch(searchQuery, searchArticles, { immediate: true });
@@ -219,6 +233,7 @@ export default defineComponent({
       truncateDescription,
       articleGrid,
       displayedArticles,
+      loadMoreArticles,
     };
   },
 });
@@ -240,7 +255,7 @@ export default defineComponent({
   color: var(--text-color);
   min-height: 100vh;
   padding: 20px;
-  margin-bottom: 150px;
+  /* margin-bottom: 150px; */
   box-sizing: border-box;
 }
 
@@ -290,7 +305,7 @@ export default defineComponent({
 
 .main-content {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 2fr;
   gap: 40px;
   position: relative;
 }
@@ -298,11 +313,13 @@ export default defineComponent({
 .left-column {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 30px;
 }
 
 .right-column {
+  /* display: grid; */
   position: relative;
+  /* flex-direction: column; */
 }
 
 .featured-article {
@@ -374,29 +391,73 @@ export default defineComponent({
   background: linear-gradient(135deg, #ffffff, #cccccc);;
   color: black;
   border-radius: 20px;
-  padding: 20px;
+  padding: 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.section-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 20px;
+  min-height: 400px; /* Add this line to ensure minimum height */
 }
 
 .article-grid {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-rows: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
-  height: calc(100vh - 200px); /* Adjust this value based on your layout */
+  row-gap: 60px;
+  padding: 10px;
+  height: 60vh; 
   overflow-y: auto;
+  padding-right: 15px;
+  min-height: 300px; /* Add this line to ensure minimum height */
 }
 
 .article-card {
-  flex-shrink: 0;
-  background-color: #e2e9df;
+  background-color: #e6f3e6;
   border-radius: 10px;
-  padding: 15px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.article-content {
+  flex-grow: 1;
+}
+
+.article-card h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #333;
+  
+}
+
+.article-date {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.article-description {
+  font-size: 14px;
+  color: #444;
+  margin-bottom: 15px;
+}
+
+.read-more-light {
+  align-self: flex-start;
+  background-color: transparent;
+  color: black;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+  margin-top: auto;
+}
+
+.read-more-light:hover {
+  background-color: #45a049;
 }
 
 .about {
@@ -623,5 +684,21 @@ export default defineComponent({
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1000;
+}
+
+.load-more-button {
+  display: block;
+  margin: 20px auto 0;
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.load-more-button:hover {
+  background-color: #6a1cb7;
 }
 </style>

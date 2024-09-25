@@ -183,7 +183,7 @@ body.dark-mode .footer-info a {
 }
 
 body.dark-mode .toggle-button {
-  background-color: #ADD8E6; /* Light blue for dark mode */
+  background-color: #92a6ca; /* Light blue for dark mode */
   color: #1d1d1d; /* Dark text color for better contrast */
 }
 
@@ -255,7 +255,7 @@ body, body *, .navbar, .navbar-item, .toggle-button, .footer-info p, .footer-inf
 }
 
 body.dark-mode .back-button {
-  background-color: #ADD8E6; /* Light blue for dark mode */
+  background-color: #92a6ca; /* Light blue for dark mode */
   color: #1d1d1d; /* Dark text color for better contrast */
 }
 
