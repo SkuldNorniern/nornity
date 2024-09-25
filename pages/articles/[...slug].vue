@@ -1,27 +1,21 @@
-<!---->
-<!-- <script lang="ts" setup> -->
-<!-- const { data } = await useAsyncData('page-data', () => queryContent($route.params.slug).findOne()) -->
-<!-- </script> -->
-<!---->
-<!-- <template> -->
-<!--   <main> -->
-<!--     <ContentRenderer :value="data"> -->
-<!--       <h1>{{ data.title }}</h1> -->
-<!--       <ContentRendererMarkdown :value="data" /> -->
-<!--     </ContentRenderer> -->
-<!--   </main> -->
-<!-- </template> -->
-
 <template>
   <div v-if="data" class="article-container">
-    <h1>{{ data.title }}</h1>
-    <div class="article-meta">
-      <div class="author-info">
-        <img :src="data.authorAvatar || '/default/thumbnail.png'" alt="Author's avatar" class="author-avatar">
-        <span class="author-name">By {{ data.author }}</span>
+    <header class="article-header">
+      <h1 class="article-title">{{ data.title }}</h1>
+      <div class="article-meta">
+        <div class="author-info">
+          <img :src="data.authorAvatar || '/default/thumbnail.png'" alt="Author's avatar" class="author-avatar">
+          <span class="author-name">By {{ data.author }}</span>
+        </div>
+        <div class="article-details">
+          <div class="tags">
+            <span v-for="tag in data.tag" class="tag-badge">{{ tag }}</span>
+          </div>
+          <span class="article-date">Published on:  {{ formatDate(data.date) }}</span>
+          <span class="reading-time">{{ readingTime }} min read</span>
+        </div>
       </div>
-      <span class="reading-time">{{ readingTime }} min read</span>
-    </div>
+    </header>
     <ContentRenderer :value="data" />
   </div>
   <div v-else-if="error">
@@ -91,53 +85,108 @@ watch(data, async () => {
     contentLoaded.value = true;
   }
 }, { immediate: true, deep: true });
+
+const formatDate = (dateString: string) => {
+  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+};
 </script>
 
 <style scoped>
 :root {
-  --background-color: #0f2027;
-  --text-color: #c9d1d9;
-  --primary-color: #0070f3;
-  --secondary-color: #586069;
-  --link-color: #0366d6;
-  --link-hover-color: #ff6347;
-  --border-color: #e1e4e8;
-  --shadow-color: rgba(0, 0, 0, 0.2);
+  --background-color: #f9f9f9;
+  --text-color: #4a4a4a;
+  --primary-color: #5a67d8;
+  --secondary-color: #718096;
+  --link-color: #2b6cb0;
+  --link-hover-color: #2c5282;
+  --border-color: #e2e8f0;
+  --shadow-color: rgba(0, 0, 0, 0.05);
 }
 
 .article-container {
   max-width: 800px;
   margin: 60px auto;
   padding: 2.5rem;
-  margin-bottom: 100px;
   background: var(--background-color);
   color: var(--text-color);
-  box-shadow: 0 4px 15px var(--shadow-color);
-  border-radius: 12px;
+  box-shadow: 0 2px 10px var(--shadow-color);
+  border-radius: 8px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.article-container:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 20px var(--shadow-color);
+.article-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
-.article-meta, .author-info {
+.article-title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+.article-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.author-info {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
 }
 
 .author-avatar {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   margin-right: 10px;
-  border: 2px solid var(--primary-color);
+  border: 1px solid var(--primary-color);
 }
 
-.author-name, .reading-time {
+.author-name {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+}
+
+.article-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.tags {
+  margin-bottom: 0.5rem;
+}
+
+.tag-badge {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 0.2rem 0.5rem;
+  margin: 0.2rem 0.3rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.tag-badge:hover {
+  background-color: var(--link-hover-color);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.article-date {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  margin-bottom: 0.5rem;
+}
+
+.reading-time {
   font-size: 0.9rem;
   color: var(--secondary-color);
 }

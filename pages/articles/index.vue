@@ -5,7 +5,7 @@ const { data } = await useAsyncData('page-data', () => queryContent('/articles')
 <template>
   <div class="container">
     <div class="hero-section">
-      <h1>{{ data?.title }}</h1>
+      <title>{{ data?.title }}</title>
     </div>
     <main class="main-content">
       <ContentRenderer v-if="data" :value="data">
