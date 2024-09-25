@@ -1,17 +1,11 @@
 <template>
   <div class="search-results">
-    <h3 v-if="filteredArticles.length">Search Results:</h3>
+    <h3 v-if="filteredArticles.length">Search Results</h3>
     <div v-else class="no-results">
       <p>No articles found for "{{ searchQuery }}"</p>
     </div>
-    <div class="articles-grid">
-      <div v-for="article in filteredArticles" :key="article.id" class="article-card">
-        <img 
-          :src="article.thumbnail || defaultThumbnail" 
-          alt="Article Thumbnail" 
-          class="article-image" 
-          loading="lazy"
-        />
+    <div class="articles-list">
+      <div v-for="article in filteredArticles" :key="article.id" class="article-item">
         <div class="article-content">
           <h4>{{ article.title }}</h4>
           <p class="article-date">{{ formatDate(article.date) }}</p>
@@ -61,82 +55,71 @@ export default defineComponent({
 .search-results {
   margin-top: 20px;
   padding: 0 20px;
+  color: black
 }
 
 .no-results {
   text-align: center;
   color: var(--secondary-color);
-  font-size: 1.2em;
+  font-size: 1.1em;
   margin-top: 20px;
 }
 
-.articles-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+.articles-list {
+  display: flex;
+  flex-direction: column;
   gap: 20px;
   margin-top: 20px;
 }
 
-.article-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 15px;
+.article-item {
+  background-color: #ffffff;
+  border-radius: 10px;
   overflow: hidden;
-  transition: transform 0.3s, box-shadow 0.3s;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+  transition: box-shadow 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.article-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 255, 255, 0.2);
-}
-
-.article-image {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
+.article-item:hover {
+  box-shadow: 0 4px 8px rgba(138, 43, 226, 0.2);
 }
 
 .article-content {
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
+  padding: 20px;
 }
 
 .article-content h4 {
   margin: 0 0 10px 0;
   color: var(--primary-color);
-  font-size: 1.25em;
+  font-size: 1.2em;
 }
 
 .article-date {
   font-size: 0.9em;
-  color: #c9d1d9;
+  color: #666666;
   margin-bottom: 10px;
 }
 
 .article-snippet {
-  flex-grow: 1;
-  color: var(--secondary-color);
+  color: #333333;
   margin-bottom: 15px;
+  line-height: 1.4;
 }
 
 .read-more {
-  align-self: flex-start;
-  padding: 8px 16px;
-  background-color: var(--primary-color);
-  color: var(--background-color);
+  display: inline-block;
+  padding: 6px 12px;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
   border-radius: 20px;
   text-decoration: none;
-  transition: background-color 0.3s, transform 0.3s;
+  font-size: 0.9em;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .read-more:hover {
-  background-color: #00cccc;
-  transform: translateY(-2px);
+  background-color: var(--primary-color);
+  color: white;
 }
 </style>
 

@@ -254,13 +254,14 @@ export default defineComponent({
 .search-container {
   position: relative;
   width: 100%;
-  max-width: 450px; /* Match the width in the image */
+  max-width: 800px; /* Match the width in the image */
   display: flex;
   justify-content: center;
 }
 
 .search-input {
   width: 100%;
+  max-width: 450px;
   padding: 12px 20px;
   border: 2px solid var(--primary-color);
   border-radius: 30px;
