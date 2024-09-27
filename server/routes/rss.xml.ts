@@ -3,7 +3,7 @@ import { serverQueryContent } from "#content/server";
 
 export default defineEventHandler(async (event) => {
   try {
-    const URL = "nornity.com"
+    const URL = "https://nornity.com"
     const TITLE = "Nornity";
     const DESCRIPTION = "Nornity is a place for me to share my thoughts on AI, Rust, and everything in between.";
 
