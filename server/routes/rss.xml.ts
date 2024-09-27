@@ -9,7 +9,9 @@ export default defineEventHandler(async (event) => {
 
     // Query articles based on the structure in index.vue
     const articles = await serverQueryContent(event, 'articles')
-      .where({ _extension: 'md' })
+      .where({ 
+        _extension: 'md',
+      })
       .sort({ date: -1 })
       .find();
 
