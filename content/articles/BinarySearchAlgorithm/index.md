@@ -8,17 +8,34 @@ date: "2024-09-24"
 author: "Skuld Norniern"
 ---
 
-Binary Search Algorithm is a one of a Search Algorithm and the main point of this algorithm is that dividing the search radius to two part.
+## Introduction
 
-and that's why binary search is faster than normal search algorithm that search the whole search radius.
-The way you do the Binary Search is to use the left, right, mid. First of all the mid value will be (left + right)/2 and we will compare that value with the value that we are trying to find.
-when you are doing the Binary Search Algorithm the array should be sorted
-set the mid value using the left, right value
-compare the mid value with the value that we are trying to find
-after comparing if the mid value is bigger than the value that we are trying to found, then the left value should be mid+1 and if the mid value is smaller, the right value should be mid-1
-continue this method while left <= right to get the answer we are looking for
-Normal search method's Time Complexity should be O(n) but when we use this method the Time Complexity should be O(log(n)), So should be very fast 
-[I will insert the image for  easy understanding]
+The **Binary Search Algorithm** is a fundamental search technique used in computer science. It efficiently finds the position of a target value within a **sorted** array by repeatedly dividing the search interval in half. This method is significantly faster than a linear search, especially for large datasets.
+
+## Why Binary Search?
+
+Unlike a linear search that checks each element one by one with a time complexity of \(O(n)\), binary search reduces the search time to \(O(\log n)\). This efficiency is achieved by eliminating half of the remaining elements in each step of the search process.
+
+## How Binary Search Works
+
+To perform a binary search, follow these steps:
+
+1. **Ensure the array is sorted.** Binary search only works on sorted arrays.
+2. **Initialize pointers:**
+   - `left` pointing to the start of the array.
+   - `right` pointing to the end of the array.
+3. **Calculate the middle index:**
+   - `mid = (left + right) / 2`
+4. **Compare the middle element with the target value:**
+   - If `arr[mid]` is equal to the target, the search is successful.
+   - If `arr[mid]` is greater than the target, adjust the `right` pointer to `mid - 1`.
+   - If `arr[mid]` is less than the target, adjust the `left` pointer to `mid + 1`.
+5. **Repeat the process** until the target is found or the `left` pointer exceeds the `right` pointer.
+
+## C++ Implementation
+
+Below is a C++ implementation of the binary search algorithm:
+
 ```cpp
 #include<stdio.h>
 int arr[10]={1, 2, 5, 6, 8, 9, 10, 16, 19, 24};
@@ -38,5 +55,64 @@ int main(){
 }
 ```
 
-You can also use the lower_bound, upper_bound from the STL libraryyou can use it as lower/upper_bound(arr, arr+n, key);The only downside is that the return type is a form of a Iterator so if you want the value of the key placement, you can - v.begin() or use the array's name 
-What you have to know is that the lower_bound is a function that find's the number's placement value of that is bigger or the sameand the upper_bound is a function that find's the number's placement value of that is bigger 
+## STL Alternatives: `lower_bound` and `upper_bound`
+
+The C++ Standard Template Library (STL) provides efficient alternatives to manual binary search implementation through the `lower_bound` and `upper_bound` functions.
+
+### Usage
+
+You can use these functions as follows:
+
+```cpp
+auto it = lower_bound(arr, arr + n, key);
+// or
+auto it = upper_bound(arr, arr + n, key);
+```
+
+### Return Value and Index Calculation
+
+These functions return an iterator. To get the index of the found element:
+
+- For vectors: `it - v.begin()`
+- For arrays: `it - arr`
+
+### Function Descriptions
+
+1. **`lower_bound`**: 
+   - Finds the position of the first element that is not less than the given key.
+   - In other words, it returns the first position where the key could be inserted while maintaining the sorted order.
+
+2. **`upper_bound`**: 
+   - Finds the position of the first element that is greater than the given key.
+   - It returns the position after the last occurrence of the key in the sorted sequence.
+
+### Example
+
+```cpp
+#include <algorithm>
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> v = {1, 2, 4, 4, 5, 6, 7};
+    int key = 4;
+
+    auto lower = std::lower_bound(v.begin(), v.end(), key);
+    auto upper = std::upper_bound(v.begin(), v.end(), key);
+
+    printf("Lower bound of %d is at index: %d\n", key, (lower - v.begin()));
+    printf("Upper bound of %d is at index: %d\n", key, (upper - v.begin()));
+
+    return 0;
+}
+```
+
+This example demonstrates how `lower_bound` finds the first position of 4, while `upper_bound` finds the position after the last occurrence of 4.
+
+### Advantages
+
+- Concise and readable code
+- Optimized performance
+- Works with any container that supports random access iterators
+
+By understanding and utilizing `lower_bound` and `upper_bound`, you can efficiently perform binary search operations in your C++ programs without manually implementing the algorithm.
