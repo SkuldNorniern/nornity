@@ -3,9 +3,9 @@ import { serverQueryContent } from "#content/server";
 
 export default defineEventHandler(async (event) => {
   try {
-    const URL = process.env.PUBLIC_URL?.toString() as string;
-    const TITLE = process.env.PUBLIC_TITLE?.toString() as string;
-    const DESCRIPTION = process.env.PUBLIC_DESCRIPTION?.toString() as string;
+    const URL = "nornity.com"
+    const TITLE = "Nornity";
+    const DESCRIPTION = "Nornity is a place for me to share my thoughts on AI, Rust, and everything in between.";
 
     // Query articles based on the structure in index.vue
     const articles = await serverQueryContent(event, 'articles')
