@@ -1,34 +1,8 @@
 <template>
 	<div id="app">
-		<!-- Google Tag -->
-		<head>
-			<!-- Google tag (gtag.js) -->
-			<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q15HT56VDB"></script>
-			<script>
-			window.dataLayer = window.dataLayer || [];
-			function gtag(){dataLayer.push(arguments);}
-			gtag('js', new Date());
-
-			gtag('config', 'G-Q15HT56VDB');
-			</script>
-		</head>
-
 		<main>
 			<slot />
 		</main>
-
-		<!-- <footer class="navbar">
-		<div class="container footer-content">
-		<nav class="footer-nav">
-		<a class="navbar-item" href="/">Home</a>
-		<a class="navbar-item" href="/about">About</a>
-		</nav>  
-		<div class="footer-info">
-		<p>© 2024 SkuldNorniern. All rights reserved.</p>
-		<p>Follow on <a href="https://github.com/SkuldNorniern" target="_blank">GitHub</a>.</p>
-		</div>
-		</div>
-		</footer> -->
 
 		<!-- Dark mode toggle as a floating icon -->
 		<div class="dark-mode-toggle">
@@ -70,6 +44,27 @@ export default {
 		};
 
 		return { isDarkMode, toggleDarkMode, goBack };
+	},
+	head() {
+		return {
+			// Google Tag Manager Script
+			script: [
+				{
+					src: 'https://www.googletagmanager.com/gtag/js?id=G-Q15HT56VDB',
+					async: true,
+				},
+				{
+					innerHTML: `
+						window.dataLayer = window.dataLayer || [];
+						function gtag(){dataLayer.push(arguments);}
+						gtag('js', new Date());
+						gtag('config', 'G-Q15HT56VDB');
+					`,
+					type: 'text/javascript',
+				},
+			],
+			__dangerouslyDisableSanitizers: ['script'],
+		};
 	},
 };
 </script>
