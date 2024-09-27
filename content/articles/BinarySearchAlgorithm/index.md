@@ -8,8 +8,6 @@ date: "2024-09-24"
 author: "Skuld Norniern"
 ---
 
-## Introduction
-
 The **Binary Search Algorithm** is a fundamental search technique used in computer science. It efficiently finds the position of a target value within a **sorted** array by repeatedly dividing the search interval in half. This method is significantly faster than a linear search, especially for large datasets.
 
 ## Why Binary Search?
