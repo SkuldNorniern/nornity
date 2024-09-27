@@ -22,6 +22,7 @@
 
 <script lang="ts">
 import { ref, onMounted } from 'vue';
+import { useHead } from '@vueuse/head'; // Import useHead from @vueuse/head
 
 export default {
 	setup() {
@@ -43,18 +44,15 @@ export default {
 			window.history.back();
 		};
 
-		return { isDarkMode, toggleDarkMode, goBack };
-	},
-	head() {
-		return {
-			// Google Tag Manager Script
+		// Inject Google Analytics scripts into the head
+		useHead({
 			script: [
 				{
 					src: 'https://www.googletagmanager.com/gtag/js?id=G-Q15HT56VDB',
 					async: true,
 				},
 				{
-					innerHTML: `
+					children: `
 						window.dataLayer = window.dataLayer || [];
 						function gtag(){dataLayer.push(arguments);}
 						gtag('js', new Date());
@@ -63,8 +61,9 @@ export default {
 					type: 'text/javascript',
 				},
 			],
-			__dangerouslyDisableSanitizers: ['script'],
-		};
+		});
+
+		return { isDarkMode, toggleDarkMode, goBack };
 	},
 };
 </script>
@@ -274,5 +273,5 @@ body.dark-mode .back-button {
 	}
 }
 
-
+/* Ensure the Google Analytics scripts have access */
 </style>
