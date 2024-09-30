@@ -394,7 +394,7 @@ export default defineComponent({
   border-radius: 20px;
   padding: 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-height: 400px; /* Add this line to ensure minimum height */
+  min-height: 400px; 
 }
 
 .article-grid {
@@ -404,7 +404,7 @@ export default defineComponent({
   gap: 20px;
   row-gap: 60px;
   padding: 10px;
-  height: 60vh; 
+  /* height: 60vh;  */
   overflow-y: auto;
   padding-right: 15px;
   min-height: 300px; /* Add this line to ensure minimum height */
