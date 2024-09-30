@@ -15,7 +15,7 @@
     <main class="main-content">
       <div class="left-column">
         <!-- Featured Article -->
-        <section class="featured-article" v-for="lastarticle in latestArticle" :key="lastarticle.slug">
+        <section class="featured-article" v-for="lastarticle in latestArticle" :key="latestArticle.slug">
           <div class="floating-orb"></div>
           
           <div class="article-content">
@@ -55,6 +55,26 @@
             <div class="decoration decoration-3"></div>
           </div>
         </section>
+
+        <!-- New Support Section -->
+        <section class="support-section">
+          <h2>Stay Updated & Support</h2>
+          
+          <!-- RSS Feed Link with Copy Button -->
+          <div class="rss-feed">
+            <a href="/rss.xml" target="_blank" rel="noopener noreferrer">Subscribe to RSS Feed</a>
+            <button @click="copyRSSLink" class="copy-button">Copy Link</button>
+            <span v-if="copySuccess" class="copy-success">Link Copied!</span>
+            <span v-if="copyError" class="copy-error">Failed to copy link. Please try again.</span>
+          </div>
+          
+          <!-- Buy Me a Coffee Button -->
+          <div class="buy-me-coffee">
+            <a href="https://www.buymeacoffee.com/SkuldNorniern" target="_blank" rel="noopener noreferrer" class="coffee-button">
+              ☕ Buy Me a Coffee
+            </a>
+          </div>
+        </section>
       </div>
 
       <div class="right-column">
@@ -76,10 +96,7 @@
             Load More
           </button>
         </section>
-
-        
       </div>
-      
     </main>
   </div>
 </template>
@@ -108,6 +125,9 @@ export default defineComponent({
     const displayedArticles = ref([]);
     const articlesPerPage = ref(6); // Default number of articles to display
 
+    const copySuccess = ref(false);
+    const copyError = ref(false);
+
     const fetchArticles = async () => {
       try {
         isLoading.value = true;
@@ -118,13 +138,12 @@ export default defineComponent({
         console.log('Article List:', articles.value);
       } catch (error) {
         console.error('Error fetching articles:', error);
-        // Optionally, display an error message to the user
       } finally {
         isLoading.value = false;
       }
     };
 
-    const fetchLatestArticle = async () => {
+    const LatestArticle = async () => {
       try {
         isLoading.value = true;
         const fetchedArticles = await queryContent('articles')
@@ -201,12 +220,48 @@ export default defineComponent({
       displayedArticles.value = [...displayedArticles.value, ...newArticles];
     };
 
+    const copyRSSLink = async () => {
+      const rssLink = `${window.location.origin}/feed.xml`;
+      
+      if (process.client) {
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(rssLink);
+            copySuccess.value = true;
+            copyError.value = false;
+          } else {
+            // Fallback for browsers that don't support the Clipboard API
+            const textArea = document.createElement('textarea');
+            textArea.value = rssLink;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            copySuccess.value = true;
+            copyError.value = false;
+          }
+          setTimeout(() => {
+            copySuccess.value = false;
+          }, 2000);
+        } catch (error) {
+          console.error('Failed to copy RSS link:', error);
+          copyError.value = true;
+          copySuccess.value = false;
+          setTimeout(() => {
+            copyError.value = false;
+          }, 2000);
+        }
+      } else {
+        console.warn('Copying is not available during server-side rendering');
+      }
+    };
+
     watch(searchQuery, searchArticles, { immediate: true });
 
     onMounted(async () => {
       await Promise.all([
         fetchArticles(),
-        fetchLatestArticle(),
+        LatestArticle(),
         fetchFeaturedArticles(),
         fetchFeaturedProducts(),
       ]);
@@ -235,6 +290,9 @@ export default defineComponent({
       articleGrid,
       displayedArticles,
       loadMoreArticles,
+      copySuccess,
+      copyError,
+      copyRSSLink,
     };
   },
 });
@@ -307,7 +365,8 @@ export default defineComponent({
 .main-content {
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 40px;
+  gap: 40px; 
+  max-height: 50vh;
   position: relative;
 }
 
@@ -701,5 +760,76 @@ export default defineComponent({
 
 .load-more-button:hover {
   background-color: #6a1cb7;
+}
+
+/* Support Section Styles */
+.support-section {
+  background: linear-gradient(135deg, #f0f0f0, #d3d3d3);
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.support-section h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: var(--primary-color);
+}
+
+.rss-feed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.rss-feed a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.copy-button {
+  padding: 8px 16px;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.copy-button:hover {
+  background-color: #e91e63;
+}
+
+.copy-success {
+  margin-top: 10px;
+  color: green;
+  font-size: 14px;
+}
+
+.copy-error {
+  margin-top: 10px;
+  color: red;
+  font-size: 14px;
+}
+
+.buy-me-coffee .coffee-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #ff813f;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.buy-me-coffee .coffee-button:hover {
+  background-color: #e67334;
 }
 </style>
