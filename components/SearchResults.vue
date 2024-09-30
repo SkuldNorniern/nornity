@@ -10,7 +10,7 @@
           <h4>{{ article.title }}</h4>
           <p class="article-date">{{ formatDate(article.date) }}</p>
           <p class="article-snippet">
-            {{ article.description || article.content.slice(0, 100) }}...
+            {{ article.description || (article.content?.slice(0, 100) || 'No description available') }}...
           </p>
           <NuxtLink :to="`/articles/${article.slug}`" class="read-more">Read More</NuxtLink>
         </div>
