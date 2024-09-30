@@ -3,10 +3,19 @@
     <!-- Navigation -->
     <nav class="navigation">
       <div class="search-container">
-        <input type="text" placeholder="Search articles..." class="search-input" v-model="searchQuery" @input="performSearch" />
+        <input
+          type="text"
+          placeholder="Search articles..."
+          class="search-input"
+          v-model="searchQuery"
+          @input="performSearch"
+        />
         <!-- Floating Search Results Panel -->
         <div class="floating-search-results" v-if="filteredArticles.length">
-          <SearchResults :filteredArticles="filteredArticles" :searchQuery="searchQuery"></SearchResults>
+          <SearchResults
+            :filteredArticles="filteredArticles"
+            :searchQuery="searchQuery"
+          />
         </div>
       </div>
     </nav>
@@ -14,40 +23,56 @@
     <!-- Main Content -->
     <main class="main-content">
       <div class="left-column">
-        <!-- Featured Article -->
-        <section class="featured-article" v-for="lastarticle in latestArticle" :key="latestArticle.slug">
+        <!-- Featured Articles -->
+        <section
+          class="featured-article"
+          v-for="article in latestArticle"
+          :key="article.slug"
+        >
           <div class="floating-orb"></div>
-          
           <div class="article-content">
             <div class="article-meta">Latest Article</div>
-            <h1 class="article-title">{{ lastarticle.title }}</h1>
-            <p>{{ lastarticle.date }}</p>
-            <p>{{ truncateDescription(lastarticle.description, 100) }}</p>
-            <a :href="`/articles/${lastarticle.slug}`" class="read-more">Read article</a>
+            <h1 class="article-title">{{ article.title }}</h1>
+            <p>{{ article.date }}</p>
+            <p>{{ truncateDescription(article.description, 100) }}</p>
+            <a :href="`/articles/${article.slug}`" class="read-more">
+              Read article
+            </a>
           </div>
         </section>
 
-        <!-- About Section (Replaced Trending Posts) -->
+        <!-- About Section -->
         <section class="featured-article about-section">
           <div class="article-content">
             <div class="about-header">
-              <img src="https://avatars.githubusercontent.com/u/43695854?v=4" alt="Profile Picture" class="profile-picture" />
+              <img
+                src="https://avatars.githubusercontent.com/u/43695854?v=4"
+                alt="Profile Picture"
+                class="profile-picture"
+              />
               <h1 class="article-title">Skuld Norniern</h1>
             </div>
-            
+
             <div class="about-me">
               <h2>About Me</h2>
-              <p>Welcome to my blog! Here you can find information about my dev log, and my story.</p>
+              <p>
+                Welcome to my blog! Here you can find information about my dev log,
+                and my story.
+              </p>
               <p>Available Stacks: C/C++, Rust, Go, Python</p>
             </div>
 
             <div class="social-links">
-              <a href="https://github.com/SkuldNorniern" target="_blank">GitHub</a>
-              <a href="https://twitter.com/SkuldNorniern" target="_blank">Twitter</a>
+              <a href="https://github.com/SkuldNorniern" target="_blank">
+                GitHub
+              </a>
+              <a href="https://twitter.com/SkuldNorniern" target="_blank">
+                Twitter
+              </a>
               <!-- <a href="https://www.linkedin.com/in//" target="_blank">LinkedIn</a> -->
             </div>
           </div>
-          
+
           <!-- Floating Decorations -->
           <div class="floating-decorations">
             <div class="decoration decoration-1"></div>
@@ -59,20 +84,31 @@
         <!-- Enhanced Support Section -->
         <section class="support-section">
           <h2 class="section-title">Stay Connected & Support</h2>
-          
           <div class="support-content">
             <!-- RSS Feed Link with Copy Button -->
             <div class="rss-feed">
               <i class="fas fa-rss icon-rss"></i>
-              <a href="/rss.xml" target="_blank" rel="noopener noreferrer">Subscribe to RSS Feed</a>
-              <button @click="copyRSSLink" class="copy-button" :class="{ 'success': copySuccess, 'error': copyError }">
-                <i class="fas fa-copy"></i> {{ copySuccess ? 'Copied!' : 'Copy Link' }}
+              <a href="/rss.xml" target="_blank" rel="noopener noreferrer">
+                Subscribe to RSS Feed
+              </a>
+              <button
+                @click="copyRSSLink"
+                class="copy-button"
+                :class="{ success: copySuccess, error: copyError }"
+              >
+                <i class="fas fa-copy"></i>
+                {{ copySuccess ? 'Copied!' : 'Copy Link' }}
               </button>
             </div>
-            
+
             <!-- Buy Me a Coffee Button -->
             <div class="buy-me-coffee">
-              <a href="https://www.buymeacoffee.com/SkuldNorniern" target="_blank" rel="noopener noreferrer" class="coffee-button">
+              <a
+                href="https://www.buymeacoffee.com/SkuldNorniern"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="coffee-button"
+              >
                 <i class="fas fa-coffee"></i> Buy Me a Coffee
               </a>
             </div>
@@ -91,17 +127,28 @@
         <section class="recommended-articles">
           <h2 class="section-title">Recommended</h2>
           <div class="article-grid" ref="articleGrid">
-            <!-- Article cards go here -->
-            <article class="article-card" v-for="article in displayedArticles" :key="article.slug">
+            <article
+              class="article-card"
+              v-for="article in displayedArticles"
+              :key="article.slug"
+            >
               <div class="article-content">
                 <h3>{{ article.title }}</h3>
                 <p class="article-date">{{ article.date }}</p>
-                <p class="article-description">{{ truncateDescription(article.description, 100) }}</p>
+                <p class="article-description">
+                  {{ truncateDescription(article.description, 100) }}
+                </p>
               </div>
-              <a :href="`/articles/${article.slug}`" class="read-more-light">Read article</a>
+              <a :href="`/articles/${article.slug}`" class="read-more-light">
+                Read article
+              </a>
             </article>
           </div>
-          <button v-if="displayedArticles.length < articles.length" @click="loadMoreArticles" class="load-more-button">
+          <button
+            v-if="displayedArticles.length < articles.length"
+            @click="loadMoreArticles"
+            class="load-more-button"
+          >
             Load More
           </button>
         </section>
@@ -111,56 +158,73 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, onMounted, computed } from 'vue';
+import {
+  defineComponent,
+  ref,
+  watch,
+  onMounted,
+  computed,
+} from 'vue';
 import FeaturedArticles from '@/components/FeaturedArticles.vue';
 import FeaturedProducts from '@/components/FeaturedProducts.vue';
-import SearchResults from '@/components/SearchResults.vue'; // Correct import
+import SearchResults from '@/components/SearchResults.vue';
+
+interface Article {
+  title: string;
+  slug: string;
+  date: string;
+  description: string;
+  [key: string]: any;
+}
 
 export default defineComponent({
   components: {
     FeaturedArticles,
     FeaturedProducts,
-    SearchResults, // Correct registration
+    SearchResults,
   },
   setup() {
     const searchQuery = ref('');
-    const articles = ref<Array<{ title: string; slug: string; date: string; [key: string]: any }>>([]);
-    const latestArticle = ref<Array<{ title: string; slug: string; date: string; [key: string]: any }>>([]);
-    const filteredArticles = ref<Array<{ title: string; [key: string]: any }>>([]);
-    const featuredArticles = ref<Array<{ title: string; [key: string]: any }>>([]);
-    const featuredProducts = ref<Array<{ name: string; [key: string]: any }>>([]);
+    const articles = ref<Article[]>([]);
+    const latestArticle = ref<Article[]>([]);
+    const filteredArticles = ref<Article[]>([]);
+    const featuredArticles = ref<Article[]>([]);
+    const featuredProducts = ref<any[]>([]);
     const isLoading = ref(false);
-    const articleGrid = ref(null);
-    const displayedArticles = ref([]);
-    const articlesPerPage = ref(6); // Default number of articles to display
+    const articleGrid = ref<HTMLElement | null>(null);
+    const displayedArticles = ref<Article[]>([]);
+    const articlesPerPage = ref(6);
 
     const copySuccess = ref(false);
     const copyError = ref(false);
 
-    const fetchArticles = async () => {
+    const fetchContent = async (
+      contentType: string,
+      targetRef: typeof articles | typeof featuredArticles | typeof featuredProducts
+    ) => {
       try {
         isLoading.value = true;
-        const fetchedArticles = await queryContent('articles')
+        const fetchedData = await queryContent(contentType)
           .where({ _extension: 'md' })
           .find();
-        articles.value = fetchedArticles;
-        console.log('Article List:', articles.value);
+        targetRef.value = fetchedData;
+        console.log(`${contentType} List:`, targetRef.value);
       } catch (error) {
-        console.error('Error fetching articles:', error);
+        console.error(`Error fetching ${contentType}:`, error);
       } finally {
         isLoading.value = false;
       }
     };
 
-    const LatestArticle = async () => {
+    const fetchLatestArticle = async () => {
       try {
         isLoading.value = true;
-        const fetchedArticles = await queryContent('articles')
+        const fetchedData = await queryContent('articles')
           .where({ _extension: 'md' })
           .sort({ date: -1 })
           .limit(1)
           .find();
-        latestArticle.value = fetchedArticles;
+        latestArticle.value = fetchedData;
         console.log('Latest Article:', latestArticle.value);
       } catch (error) {
         console.error('Error fetching latest article:', error);
@@ -169,41 +233,13 @@ export default defineComponent({
       }
     };
 
-    const fetchFeaturedArticles = async () => {
-      try {
-        isLoading.value = true;
-        featuredArticles.value = await queryContent('featured-articles').find();
-        console.log('Featured Articles:', featuredArticles.value);
-      } catch (error) {
-        console.error('Error fetching featured articles:', error);
-      } finally {
-        isLoading.value = false;
-      }
-    };
-
-    const fetchFeaturedProducts = async () => {
-      try {
-        isLoading.value = true;
-        featuredProducts.value = await queryContent('featured-products').find();
-        console.log('Featured Products:', featuredProducts.value);
-      } catch (error) {
-        console.error('Error fetching featured products:', error);
-      } finally {
-        isLoading.value = false;
-      }
-    };
-
     const searchArticles = () => {
-      if (searchQuery.value.trim() === '') {
-        filteredArticles.value = [];
-        return;
-      }
-      console.log('Searching for:', searchQuery.value);
-      console.log('Articles:', articles.value);
-      filteredArticles.value = articles.value.filter((article) =>
-        article.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-      );
-      console.log('Filtered articles:', filteredArticles.value);
+      const query = searchQuery.value.trim().toLowerCase();
+      filteredArticles.value = query
+        ? articles.value.filter((article) =>
+            article.title.toLowerCase().includes(query)
+          )
+        : [];
     };
 
     const performSearch = () => {
@@ -217,46 +253,46 @@ export default defineComponent({
       const articleHeight = 150; // Approximate height of each article card
       const columns = Math.floor(articleGrid.value.clientWidth / 250); // Assuming 250px min-width for cards
       const rows = Math.floor(gridHeight / articleHeight);
-      
+
       const initialCount = columns * rows;
       displayedArticles.value = articles.value.slice(0, initialCount);
-      console.log('Displayed articles:', displayedArticles.value); // Add this line for debugging
+      console.log('Displayed articles:', displayedArticles.value);
     };
 
     const loadMoreArticles = () => {
       const currentLength = displayedArticles.value.length;
-      const newArticles = articles.value.slice(currentLength, currentLength + articlesPerPage.value);
+      const newArticles = articles.value.slice(
+        currentLength,
+        currentLength + articlesPerPage.value
+      );
       displayedArticles.value = [...displayedArticles.value, ...newArticles];
     };
 
     const copyRSSLink = async () => {
       const rssLink = `${window.location.origin}/rss.xml`;
-      
+
       if (process.client) {
         try {
           if (navigator.clipboard && navigator.clipboard.writeText) {
             await navigator.clipboard.writeText(rssLink);
-            copySuccess.value = true;
-            copyError.value = false;
           } else {
-            // Fallback for browsers that don't support the Clipboard API
+            // Fallback for older browsers
             const textArea = document.createElement('textarea');
             textArea.value = rssLink;
             document.body.appendChild(textArea);
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            copySuccess.value = true;
-            copyError.value = false;
           }
-          setTimeout(() => {
-            copySuccess.value = false;
-          }, 2000);
+          copySuccess.value = true;
+          copyError.value = false;
         } catch (error) {
           console.error('Failed to copy RSS link:', error);
           copyError.value = true;
           copySuccess.value = false;
+        } finally {
           setTimeout(() => {
+            copySuccess.value = false;
             copyError.value = false;
           }, 2000);
         }
@@ -265,26 +301,25 @@ export default defineComponent({
       }
     };
 
+    const truncateDescription = (description: string, maxLength: number) => {
+      return description.length <= maxLength
+        ? description
+        : `${description.slice(0, maxLength)}...`;
+    };
+
     watch(searchQuery, searchArticles, { immediate: true });
 
     onMounted(async () => {
       await Promise.all([
-        fetchArticles(),
-        LatestArticle(),
-        fetchFeaturedArticles(),
-        fetchFeaturedProducts(),
+        fetchContent('articles', articles),
+        fetchLatestArticle(),
+        fetchContent('featured-articles', featuredArticles),
+        fetchContent('featured-products', featuredProducts),
       ]);
 
       updateDisplayedArticles();
       window.addEventListener('resize', updateDisplayedArticles);
     });
-
-    const truncateDescription = (description: string, maxLength: number) => {
-      if (description.length <= maxLength) {
-        return description;
-      }
-      return description.slice(0, maxLength) + '...';
-    };
 
     return {
       searchQuery,
@@ -323,7 +358,6 @@ export default defineComponent({
   color: var(--text-color);
   min-height: 100vh;
   padding: 20px;
-  /* margin-bottom: 150px; */
   box-sizing: border-box;
 }
 
@@ -337,7 +371,7 @@ export default defineComponent({
 .search-container {
   position: relative;
   width: 100%;
-  max-width: 800px; /* Match the width in the image */
+  max-width: 800px;
   display: flex;
   justify-content: center;
 }
@@ -374,7 +408,7 @@ export default defineComponent({
 .main-content {
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 40px; 
+  gap: 40px;
   max-height: 50vh;
   position: relative;
 }
@@ -386,9 +420,7 @@ export default defineComponent({
 }
 
 .right-column {
-  /* display: grid; */
   position: relative;
-  /* flex-direction: column; */
 }
 
 .featured-article {
@@ -450,19 +482,28 @@ export default defineComponent({
 }
 
 @keyframes float {
-  0%, 100% { transform: translate(0, 0); }
-  25% { transform: translate(50%, 25%); }
-  50% { transform: translate(0, 50%); }
-  75% { transform: translate(-50%, 25%); }
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(50%, 25%);
+  }
+  50% {
+    transform: translate(0, 50%);
+  }
+  75% {
+    transform: translate(-50%, 25%);
+  }
 }
 
 .recommended-articles {
-  background: linear-gradient(135deg, #ffffff, #cccccc);;
+  background: linear-gradient(135deg, #ffffff, #cccccc);
   color: black;
   border-radius: 20px;
   padding: 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-height: 400px; 
+  min-height: 400px;
 }
 
 .article-grid {
@@ -472,10 +513,9 @@ export default defineComponent({
   gap: 20px;
   row-gap: 60px;
   padding: 10px;
-  /* height: 60vh;  */
   overflow-y: auto;
   padding-right: 15px;
-  min-height: 300px; /* Add this line to ensure minimum height */
+  min-height: 300px;
 }
 
 .article-card {
@@ -490,15 +530,10 @@ export default defineComponent({
   height: 100%;
 }
 
-.article-content {
-  flex-grow: 1;
-}
-
 .article-card h3 {
   font-size: 18px;
   margin-bottom: 10px;
   color: #333;
-  
 }
 
 .article-date {
@@ -602,10 +637,6 @@ export default defineComponent({
 .about-me h2 {
   font-size: 22px;
   margin-bottom: 10px;
-}
-
-.social-links {
-  margin-top: 20px;
 }
 
 .about-header {
@@ -724,7 +755,7 @@ export default defineComponent({
   color: var(--primary-color);
 }
 
-/* Add responsive styles as needed */
+/* Responsive Styles */
 @media (max-width: 768px) {
   .main-content {
     grid-template-columns: 1fr;
@@ -739,13 +770,26 @@ export default defineComponent({
     width: 100px;
     height: 100px;
   }
+
+  .support-section {
+    padding: 30px 20px;
+  }
+
+  .rss-feed,
+  .buy-me-coffee {
+    flex-direction: column;
+  }
+
+  .copy-button,
+  .coffee-button {
+    width: 100%;
+    justify-content: center;
+  }
 }
+
 .floating-search-results {
   position: absolute;
   margin-top: 50px;
-  /* top: 60%; */
-  /* left: 50%; */
-  /* transform: translate(-50%, -50%); */
   display: flex;
   justify-content: center;
   background-color: white;
@@ -816,7 +860,8 @@ export default defineComponent({
   z-index: 1;
 }
 
-.rss-feed, .buy-me-coffee {
+.rss-feed,
+.buy-me-coffee {
   display: flex;
   align-items: center;
   gap: 15px;
@@ -824,7 +869,7 @@ export default defineComponent({
 
 .icon-rss {
   font-size: 24px;
-  color: #FFA500;
+  color: #ffa500;
 }
 
 .rss-feed a {
@@ -839,7 +884,8 @@ export default defineComponent({
   color: var(--accent-color);
 }
 
-.copy-button, .coffee-button {
+.copy-button,
+.coffee-button {
   padding: 10px 20px;
   border: none;
   border-radius: 30px;
@@ -863,7 +909,7 @@ export default defineComponent({
 }
 
 .copy-button.success {
-  background-color: #4CAF50;
+  background-color: #4caf50;
 }
 
 .copy-button.error {
@@ -915,24 +961,9 @@ export default defineComponent({
 .shape-3 {
   width: 80px;
   height: 80px;
-  background-color: #FFA500;
+  background-color: #ffa500;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-}
-
-@media (max-width: 768px) {
-  .support-section {
-    padding: 30px 20px;
-  }
-
-  .rss-feed, .buy-me-coffee {
-    flex-direction: column;
-  }
-
-  .copy-button, .coffee-button {
-    width: 100%;
-    justify-content: center;
-  }
 }
 </style>
