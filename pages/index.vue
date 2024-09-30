@@ -11,7 +11,7 @@
           @input="performSearch"
         />
         <!-- Floating Search Results Panel -->
-        <div class="floating-search-results" v-if="filteredArticles.length">
+        <div v-if="hasFilteredArticles" class="floating-search-results">
           <SearchResults
             :filteredArticles="filteredArticles"
             :searchQuery="searchQuery"
@@ -25,9 +25,9 @@
       <div class="left-column">
         <!-- Featured Articles -->
         <section
-          class="featured-article"
           v-for="article in latestArticle"
           :key="article.slug"
+          class="featured-article"
         >
           <div class="floating-orb"></div>
           <div class="article-content">
@@ -128,9 +128,9 @@
           <h2 class="section-title">Recommended</h2>
           <div class="article-grid" ref="articleGrid">
             <article
-              class="article-card"
               v-for="article in displayedArticles"
               :key="article.slug"
+              class="article-card"
             >
               <div class="article-content">
                 <h3>{{ article.title }}</h3>
@@ -145,7 +145,7 @@
             </article>
           </div>
           <button
-            v-if="displayedArticles.length < articles.length"
+            v-if="canLoadMore"
             @click="loadMoreArticles"
             class="load-more-button"
           >
@@ -157,14 +157,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import {
-  defineComponent,
-  ref,
-  watch,
-  onMounted,
-  computed,
-} from 'vue';
+<script setup lang="ts">
+import { ref, watch, onMounted, computed } from 'vue';
 import FeaturedArticles from '@/components/FeaturedArticles.vue';
 import FeaturedProducts from '@/components/FeaturedProducts.vue';
 import SearchResults from '@/components/SearchResults.vue';
@@ -177,169 +171,143 @@ interface Article {
   [key: string]: any;
 }
 
-export default defineComponent({
-  components: {
-    FeaturedArticles,
-    FeaturedProducts,
-    SearchResults,
-  },
-  setup() {
-    const searchQuery = ref('');
-    const articles = ref<Article[]>([]);
-    const latestArticle = ref<Article[]>([]);
-    const filteredArticles = ref<Article[]>([]);
-    const featuredArticles = ref<Article[]>([]);
-    const featuredProducts = ref<any[]>([]);
-    const isLoading = ref(false);
-    const articleGrid = ref<HTMLElement | null>(null);
-    const displayedArticles = ref<Article[]>([]);
-    const articlesPerPage = ref(6);
+const searchQuery = ref('');
+const articles = ref<Article[]>([]);
+const latestArticle = ref<Article[]>([]);
+const filteredArticles = ref<Article[]>([]);
+const featuredArticles = ref<Article[]>([]);
+const featuredProducts = ref<any[]>([]);
+const isLoading = ref(false);
+const articleGrid = ref<HTMLElement | null>(null);
+const displayedArticles = ref<Article[]>([]);
+const articlesPerPage = ref(6);
 
-    const copySuccess = ref(false);
-    const copyError = ref(false);
+const copySuccess = ref(false);
+const copyError = ref(false);
 
-    const fetchContent = async (
-      contentType: string,
-      targetRef: typeof articles | typeof featuredArticles | typeof featuredProducts
-    ) => {
-      try {
-        isLoading.value = true;
-        const fetchedData = await queryContent(contentType)
-          .where({ _extension: 'md' })
-          .find();
-        targetRef.value = fetchedData;
-        console.log(`${contentType} List:`, targetRef.value);
-      } catch (error) {
-        console.error(`Error fetching ${contentType}:`, error);
-      } finally {
-        isLoading.value = false;
-      }
-    };
+const fetchContent = async (
+  contentType: string,
+  targetRef: typeof articles | typeof featuredArticles | typeof featuredProducts
+) => {
+  try {
+    isLoading.value = true;
+    const fetchedData = await queryContent(contentType)
+      .where({ _extension: 'md' })
+      .find();
+    targetRef.value = fetchedData;
+    console.log(`${contentType} List:`, targetRef.value);
+  } catch (error) {
+    console.error(`Error fetching ${contentType}:`, error);
+  } finally {
+    isLoading.value = false;
+  }
+};
 
-    const fetchLatestArticle = async () => {
-      try {
-        isLoading.value = true;
-        const fetchedData = await queryContent('articles')
-          .where({ _extension: 'md' })
-          .sort({ date: -1 })
-          .limit(1)
-          .find();
-        latestArticle.value = fetchedData;
-        console.log('Latest Article:', latestArticle.value);
-      } catch (error) {
-        console.error('Error fetching latest article:', error);
-      } finally {
-        isLoading.value = false;
-      }
-    };
+const fetchLatestArticle = async () => {
+  try {
+    isLoading.value = true;
+    const fetchedData = await queryContent('articles')
+      .where({ _extension: 'md' })
+      .sort({ date: -1 })
+      .limit(1)
+      .find();
+    latestArticle.value = fetchedData;
+    console.log('Latest Article:', latestArticle.value);
+  } catch (error) {
+    console.error('Error fetching latest article:', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
 
-    const searchArticles = () => {
-      const query = searchQuery.value.trim().toLowerCase();
-      filteredArticles.value = query
-        ? articles.value.filter((article) =>
-            article.title.toLowerCase().includes(query)
-          )
-        : [];
-    };
+const searchArticles = () => {
+  const query = searchQuery.value.trim().toLowerCase();
+  filteredArticles.value = query
+    ? articles.value.filter((article) =>
+        article.title.toLowerCase().includes(query)
+      )
+    : [];
+};
 
-    const performSearch = () => {
-      searchArticles();
-    };
+const performSearch = () => {
+  searchArticles();
+};
 
-    const updateDisplayedArticles = () => {
-      if (!articleGrid.value || articles.value.length === 0) return;
+const updateDisplayedArticles = () => {
+  if (!articleGrid.value || articles.value.length === 0) return;
 
-      const gridHeight = articleGrid.value.clientHeight;
-      const articleHeight = 150; // Approximate height of each article card
-      const columns = Math.floor(articleGrid.value.clientWidth / 250); // Assuming 250px min-width for cards
-      const rows = Math.floor(gridHeight / articleHeight);
+  const gridHeight = articleGrid.value.clientHeight;
+  const articleHeight = 150; // Approximate height of each article card
+  const columns = Math.floor(articleGrid.value.clientWidth / 250); // Assuming 250px min-width for cards
+  const rows = Math.floor(gridHeight / articleHeight);
 
-      const initialCount = columns * rows;
-      displayedArticles.value = articles.value.slice(0, initialCount);
-      console.log('Displayed articles:', displayedArticles.value);
-    };
+  const initialCount = columns * rows;
+  displayedArticles.value = articles.value.slice(0, initialCount);
+  console.log('Displayed articles:', displayedArticles.value);
+};
 
-    const loadMoreArticles = () => {
-      const currentLength = displayedArticles.value.length;
-      const newArticles = articles.value.slice(
-        currentLength,
-        currentLength + articlesPerPage.value
-      );
-      displayedArticles.value = [...displayedArticles.value, ...newArticles];
-    };
+const loadMoreArticles = () => {
+  const currentLength = displayedArticles.value.length;
+  const newArticles = articles.value.slice(
+    currentLength,
+    currentLength + articlesPerPage.value
+  );
+  displayedArticles.value = [...displayedArticles.value, ...newArticles];
+};
 
-    const copyRSSLink = async () => {
-      const rssLink = `${window.location.origin}/rss.xml`;
+const copyRSSLink = async () => {
+  const rssLink = `${window.location.origin}/rss.xml`;
 
-      if (process.client) {
-        try {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            await navigator.clipboard.writeText(rssLink);
-          } else {
-            // Fallback for older browsers
-            const textArea = document.createElement('textarea');
-            textArea.value = rssLink;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-          }
-          copySuccess.value = true;
-          copyError.value = false;
-        } catch (error) {
-          console.error('Failed to copy RSS link:', error);
-          copyError.value = true;
-          copySuccess.value = false;
-        } finally {
-          setTimeout(() => {
-            copySuccess.value = false;
-            copyError.value = false;
-          }, 2000);
-        }
+  if (process.client) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(rssLink);
       } else {
-        console.warn('Copying is not available during server-side rendering');
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = rssLink;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
       }
-    };
+      copySuccess.value = true;
+      copyError.value = false;
+    } catch (error) {
+      console.error('Failed to copy RSS link:', error);
+      copyError.value = true;
+      copySuccess.value = false;
+    } finally {
+      setTimeout(() => {
+        copySuccess.value = false;
+        copyError.value = false;
+      }, 2000);
+    }
+  } else {
+    console.warn('Copying is not available during server-side rendering');
+  }
+};
 
-    const truncateDescription = (description: string, maxLength: number) => {
-      return description.length <= maxLength
-        ? description
-        : `${description.slice(0, maxLength)}...`;
-    };
+const truncateDescription = (description: string, maxLength: number) => 
+  description.length <= maxLength ? description : `${description.slice(0, maxLength)}...`;
 
-    watch(searchQuery, searchArticles, { immediate: true });
+watch(searchQuery, searchArticles, { immediate: true });
 
-    onMounted(async () => {
-      await Promise.all([
-        fetchContent('articles', articles),
-        fetchLatestArticle(),
-        fetchContent('featured-articles', featuredArticles),
-        fetchContent('featured-products', featuredProducts),
-      ]);
+onMounted(async () => {
+  await Promise.all([
+    fetchContent('articles', articles),
+    fetchLatestArticle(),
+    fetchContent('featured-articles', featuredArticles),
+    fetchContent('featured-products', featuredProducts),
+  ]);
 
-      updateDisplayedArticles();
-      window.addEventListener('resize', updateDisplayedArticles);
-    });
-
-    return {
-      searchQuery,
-      articles,
-      latestArticle,
-      filteredArticles,
-      featuredArticles,
-      featuredProducts,
-      isLoading,
-      performSearch,
-      truncateDescription,
-      articleGrid,
-      displayedArticles,
-      loadMoreArticles,
-      copySuccess,
-      copyError,
-      copyRSSLink,
-    };
-  },
+  updateDisplayedArticles();
+  window.addEventListener('resize', updateDisplayedArticles);
 });
+
+// Computed properties
+const hasFilteredArticles = computed(() => filteredArticles.value.length > 0);
+const canLoadMore = computed(() => displayedArticles.value.length < articles.value.length);
 </script>
 
 <style scoped>
