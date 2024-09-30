@@ -15,7 +15,7 @@
     <main class="main-content">
       <div class="left-column">
         <!-- Featured Article -->
-        <section class="featured-article" v-for="lastarticle in latestArticle" :key="latestArticle.slug">
+        <section class="featured-article" v-for="lastarticle in latestArticle" :key="lastarticle.slug">
           <div class="floating-orb"></div>
           
           <div class="article-content">
@@ -118,12 +118,13 @@ export default defineComponent({
         console.log('Article List:', articles.value);
       } catch (error) {
         console.error('Error fetching articles:', error);
+        // Optionally, display an error message to the user
       } finally {
         isLoading.value = false;
       }
     };
 
-    const LatestArticle = async () => {
+    const fetchLatestArticle = async () => {
       try {
         isLoading.value = true;
         const fetchedArticles = await queryContent('articles')
@@ -205,7 +206,7 @@ export default defineComponent({
     onMounted(async () => {
       await Promise.all([
         fetchArticles(),
-        LatestArticle(),
+        fetchLatestArticle(),
         fetchFeaturedArticles(),
         fetchFeaturedProducts(),
       ]);
