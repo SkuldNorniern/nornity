@@ -56,23 +56,32 @@
           </div>
         </section>
 
-        <!-- New Support Section -->
+        <!-- Enhanced Support Section -->
         <section class="support-section">
-          <h2>Stay Updated & Support</h2>
+          <h2 class="section-title">Stay Connected & Support</h2>
           
-          <!-- RSS Feed Link with Copy Button -->
-          <div class="rss-feed">
-            <a href="/rss.xml" target="_blank" rel="noopener noreferrer">Subscribe to RSS Feed</a>
-            <button @click="copyRSSLink" class="copy-button">Copy Link</button>
-            <span v-if="copySuccess" class="copy-success">Link Copied!</span>
-            <span v-if="copyError" class="copy-error">Failed to copy link. Please try again.</span>
+          <div class="support-content">
+            <!-- RSS Feed Link with Copy Button -->
+            <div class="rss-feed">
+              <i class="fas fa-rss icon-rss"></i>
+              <a href="/rss.xml" target="_blank" rel="noopener noreferrer">Subscribe to RSS Feed</a>
+              <button @click="copyRSSLink" class="copy-button" :class="{ 'success': copySuccess, 'error': copyError }">
+                <i class="fas fa-copy"></i> {{ copySuccess ? 'Copied!' : 'Copy Link' }}
+              </button>
+            </div>
+            
+            <!-- Buy Me a Coffee Button -->
+            <div class="buy-me-coffee">
+              <a href="https://www.buymeacoffee.com/SkuldNorniern" target="_blank" rel="noopener noreferrer" class="coffee-button">
+                <i class="fas fa-coffee"></i> Buy Me a Coffee
+              </a>
+            </div>
           </div>
-          
-          <!-- Buy Me a Coffee Button -->
-          <div class="buy-me-coffee">
-            <a href="https://www.buymeacoffee.com/SkuldNorniern" target="_blank" rel="noopener noreferrer" class="coffee-button">
-              ☕ Buy Me a Coffee
-            </a>
+
+          <div class="support-background">
+            <div class="bg-shape shape-1"></div>
+            <div class="bg-shape shape-2"></div>
+            <div class="bg-shape shape-3"></div>
           </div>
         </section>
       </div>
@@ -221,7 +230,7 @@ export default defineComponent({
     };
 
     const copyRSSLink = async () => {
-      const rssLink = `${window.location.origin}/feed.xml`;
+      const rssLink = `${window.location.origin}/rss.xml`;
       
       if (process.client) {
         try {
@@ -762,74 +771,168 @@ export default defineComponent({
   background-color: #6a1cb7;
 }
 
-/* Support Section Styles */
+/* Enhanced Support Section Styles */
 .support-section {
-  background: linear-gradient(135deg, #f0f0f0, #d3d3d3);
-  padding: 30px;
+  background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+  padding: 40px;
   border-radius: 20px;
   text-align: center;
   position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.support-section h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
+.support-section:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.section-title {
+  font-size: 28px;
+  margin-bottom: 30px;
   color: var(--primary-color);
+  position: relative;
+  display: inline-block;
 }
 
-.rss-feed {
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 3px;
+  background-color: var(--accent-color);
+}
+
+.support-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
+  gap: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.rss-feed, .buy-me-coffee {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.icon-rss {
+  font-size: 24px;
+  color: #FFA500;
 }
 
 .rss-feed a {
   color: var(--primary-color);
   text-decoration: none;
   font-size: 18px;
-  margin-bottom: 10px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.rss-feed a:hover {
+  color: var(--accent-color);
+}
+
+.copy-button, .coffee-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .copy-button {
-  padding: 8px 16px;
   background-color: var(--accent-color);
   color: white;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
 .copy-button:hover {
   background-color: #e91e63;
+  transform: translateY(-2px);
 }
 
-.copy-success {
-  margin-top: 10px;
-  color: green;
-  font-size: 14px;
+.copy-button.success {
+  background-color: #4CAF50;
 }
 
-.copy-error {
-  margin-top: 10px;
-  color: red;
-  font-size: 14px;
+.copy-button.error {
+  background-color: #f44336;
 }
 
-.buy-me-coffee .coffee-button {
-  display: inline-block;
-  padding: 10px 20px;
+.coffee-button {
   background-color: #ff813f;
   color: white;
-  border: none;
-  border-radius: 20px;
   text-decoration: none;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
 }
 
-.buy-me-coffee .coffee-button:hover {
+.coffee-button:hover {
   background-color: #e67334;
+  transform: translateY(-2px);
+}
+
+.support-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.bg-shape {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.1;
+}
+
+.shape-1 {
+  width: 150px;
+  height: 150px;
+  background-color: var(--primary-color);
+  top: -50px;
+  left: -50px;
+}
+
+.shape-2 {
+  width: 100px;
+  height: 100px;
+  background-color: var(--accent-color);
+  bottom: -30px;
+  right: -30px;
+}
+
+.shape-3 {
+  width: 80px;
+  height: 80px;
+  background-color: #FFA500;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 768px) {
+  .support-section {
+    padding: 30px 20px;
+  }
+
+  .rss-feed, .buy-me-coffee {
+    flex-direction: column;
+  }
+
+  .copy-button, .coffee-button {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>
