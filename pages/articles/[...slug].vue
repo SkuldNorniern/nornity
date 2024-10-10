@@ -33,6 +33,7 @@
 import { ref, watch } from 'vue';
 import { useAsyncData } from 'nuxt/app';
 import { useRoute } from 'vue-router';
+import { useSeoMeta } from '@unhead/vue';
 
 const route = useRoute();
 const slug = Array.isArray(route.params.slug) ? route.params.slug.join('/') : route.params.slug;
@@ -42,18 +43,15 @@ console.log('Current slug:', slug); // Debug log
 const { data, error } = await useAsyncData('page-data', async () => {
   console.log('Querying content for slug:', slug); // Debug log
   const article = await queryContent('articles')
-    .where({ 
-      slug: slug,
-      _extension: 'md'
-    })
+    .where({ slug: slug })
     .findOne();
-  
+
   console.log('Query result:', article); // Debug log
-  
+
   if (!article) {
     throw new Error('Article not found');
   }
-  
+
   return article;
 });
 
@@ -90,6 +88,14 @@ const formatDate = (dateString: string) => {
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
+useSeoMeta({
+  title: () => data.value?.title ?? 'Article',
+  ogTitle: () => data.value?.title ?? 'Article',
+  description: () => data.value?.description ?? '',
+  ogDescription: () => data.value?.description ?? '',
+  ogImage: () => data.value?.image || '/default-og-image.jpg',
+  twitterCard: 'summary_large_image',
+});
 </script>
 
 <style scoped>

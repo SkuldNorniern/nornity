@@ -32,4 +32,14 @@ export default defineNuxtConfig({
   },
   telemetry: false,
   compatibilityDate: '2024-09-25',
+  seo: {
+    // Global SEO configuration
+    baseUrl: 'https://nornity.com', // Replace with your actual domain
+    name: 'Nornity',
+    title: 'Nornity - AI, Rust, and Everything in Between',
+    description: 'Nornity is a place for sharing thoughts on AI, Rust, and everything in between.',
+  },
+  sitemap: {
+    hostname: 'https://nornity.com', // Replace with your actual domain
+  },
 })
