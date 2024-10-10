@@ -17,7 +17,7 @@ export default defineNuxtConfig({
     }
   },
 
-  modules: ['@nuxt/content', '@nuxt/image'],
+  modules: ['@nuxt/content', '@nuxt/image', '@nuxtjs/seo'],
 
   nitro: {
     prerender: {
