@@ -3,7 +3,7 @@ title: "Euclidean Algorithm"
 slug: euclideanalgorithm
 image: "/images/tech-future.jpg"
 language: "English"
-tag: ["Algorithm", "Math", "C/C++", "Python", "Rust"]
+tags: ["Algorithm", "Math", "C/C++", "Python", "Rust"]
 date: "2024-01-16"
 author: "Skuld Norniern"
 ---

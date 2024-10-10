@@ -3,7 +3,7 @@ title: "Binary Search Algorithm"
 slug: binarysearchalgorithm
 image: "/images/tech-future.jpg"
 language: "English"
-tag: ["Algorithm", "Math", "C/C++"]
+tags: ["Algorithm", "Math", "C/C++"]
 date: "2024-09-24"
 author: "Skuld Norniern"
 ---

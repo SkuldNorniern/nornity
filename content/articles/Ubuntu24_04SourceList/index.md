@@ -3,7 +3,7 @@ title: "Ubuntu 24.04 LTS (Noble Numbat) Source list"
 slug: ubuntu24_04sourceslist
 image: "/images/tech-future.jpg"
 language: "English"
-tag: ["Linux"]
+tags: ["Linux"]
 date: "2024-09-27"
 author: "Skuld Norniern"
 ---

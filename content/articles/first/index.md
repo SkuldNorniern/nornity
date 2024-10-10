@@ -3,7 +3,7 @@ title: "The Future of Technology"
 slug: first
 image: "./images/tech-future.jpg"
 language: "English"
-tag: ["Tech"]
+tags: ["Tech"]
 date: "2024-01-15"
 author: "ChatGPT"
 ---

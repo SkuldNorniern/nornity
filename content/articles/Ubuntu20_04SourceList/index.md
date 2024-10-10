@@ -3,7 +3,7 @@ title: "Ubuntu 20.04 LTS (Focal Fossa) Source list"
 slug: ubuntu20_04sourceslist
 image: "/images/tech-future.jpg"
 language: "English"
-tag: ["Linux"]
+tags: ["Linux"]
 date: "2024-09-16"
 author: "Skuld Norniern"
 ---
