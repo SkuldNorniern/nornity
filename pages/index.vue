@@ -128,7 +128,7 @@
           <h2 class="section-title">Recommended</h2>
           
           <!-- Tag filter -->
-          <div class="tag-filter-container">
+          <!-- <div class="tag-filter-container">
             <div class="tag-filter">
               <span 
                 v-for="tag in allTags" 
@@ -139,11 +139,11 @@
                 {{ tag }}
               </span>
             </div>
-          </div>
+          </div> -->
 
           <div class="article-grid" ref="articleGrid">
             <article
-              v-for="article in filteredDisplayedArticles"
+              v-for="article in displayedArticles"
               :key="article.slug"
               class="article-card"
             >
@@ -444,8 +444,6 @@ const canLoadMore = computed(() => displayedArticles.value.length < articles.val
 
 .right-column {
   position: relative;
-  width: 300px; /* Adjust this value as needed */
-  flex-shrink: 0;
 }
 
 .featured-article {
@@ -529,7 +527,6 @@ const canLoadMore = computed(() => displayedArticles.value.length < articles.val
   padding: 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   min-height: 400px;
-  width: 100%;
 }
 
 .article-grid {
@@ -542,7 +539,6 @@ const canLoadMore = computed(() => displayedArticles.value.length < articles.val
   overflow-y: auto;
   padding-right: 15px;
   min-height: 300px;
-  width: 100%;
 }
 
 .article-card {
@@ -555,8 +551,6 @@ const canLoadMore = computed(() => displayedArticles.value.length < articles.val
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .article-card h3 {
@@ -784,22 +778,6 @@ const canLoadMore = computed(() => displayedArticles.value.length < articles.val
   color: var(--primary-color);
 }
 
-/* New Tag Styles */
-.tag {
-  display: inline-block;
-  background-color: var(--primary-color);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  margin-right: 5px;
-  margin-bottom: 5px;
-}
-
-.tags {
-  margin-top: 10px;
-}
-
 /* Responsive Styles */
 @media (max-width: 768px) {
   .main-content {
@@ -1013,23 +991,25 @@ const canLoadMore = computed(() => displayedArticles.value.length < articles.val
 }
 
 .tag-filter-container {
+
   margin-bottom: 20px;
   border: 1px solid var(--primary-color);
   border-radius: 30px;
   padding: 5px;
   background-color: #f0f0f0;
-  width: 100%;
-  box-sizing: border-box;
+  /* width: 100%; */
+
+  /* box-sizing: border-box; */
 }
 
 .tag-filter {
-  display: flex;
-  overflow-x: auto;
-  white-space: nowrap;
+  /* display: inline-block; */
+  /* overflow: scroll; */
+  /* white-space: nowrap; */
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: var(--primary-color) #f0f0f0;
-  width: 100%;
+  /* width: 100%; */
 }
 
 .tag-filter::-webkit-scrollbar {
