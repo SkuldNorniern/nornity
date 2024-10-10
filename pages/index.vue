@@ -126,9 +126,24 @@
         <!-- Recommended Articles -->
         <section class="recommended-articles">
           <h2 class="section-title">Recommended</h2>
+          
+          <!-- Tag filter -->
+          <div class="tag-filter-container">
+            <div class="tag-filter">
+              <span 
+                v-for="tag in allTags" 
+                :key="tag" 
+                @click="toggleTag(tag)"
+                :class="['filter-tag', { active: selectedTags.includes(tag) }]"
+              >
+                {{ tag }}
+              </span>
+            </div>
+          </div>
+
           <div class="article-grid" ref="articleGrid">
             <article
-              v-for="article in displayedArticles"
+              v-for="article in filteredDisplayedArticles"
               :key="article.slug"
               class="article-card"
             >
@@ -168,6 +183,7 @@ interface Article {
   slug: string;
   date: string;
   description: string;
+  tags: string[]; // Added tags field
   [key: string]: any;
 }
 
@@ -185,6 +201,33 @@ const articlesPerPage = ref(6);
 const copySuccess = ref(false);
 const copyError = ref(false);
 
+const selectedTags = ref<string[]>([]);
+
+const allTags = computed(() => {
+  const tagSet = new Set<string>();
+  articles.value.forEach(article => {
+    article.tags.forEach(tag => tagSet.add(tag));
+  });
+  return Array.from(tagSet);
+});
+
+const toggleTag = (tag: string) => {
+  if (selectedTags.value.includes(tag)) {
+    selectedTags.value = selectedTags.value.filter(t => t !== tag);
+  } else {
+    selectedTags.value.push(tag);
+  }
+};
+
+const filteredDisplayedArticles = computed(() => {
+  if (selectedTags.value.length === 0) {
+    return displayedArticles.value;
+  }
+  return displayedArticles.value.filter(article => 
+    article.tags.some(tag => selectedTags.value.includes(tag))
+  );
+});
+
 const fetchContent = async (
   contentType: string,
   targetRef: typeof articles | typeof featuredArticles | typeof featuredProducts
@@ -194,7 +237,13 @@ const fetchContent = async (
     const fetchedData = await queryContent(contentType)
       .where({ _extension: 'md' })
       .find();
-    targetRef.value = fetchedData;
+    
+    // Ensure each article has a tags array
+    targetRef.value = fetchedData.map((item: any) => ({
+      ...item,
+      tags: item.tags || [], // Initialize tags if not present
+    }));
+    
     console.log(`${contentType} List:`, targetRef.value);
   } catch (error) {
     console.error(`Error fetching ${contentType}:`, error);
@@ -211,7 +260,13 @@ const fetchLatestArticle = async () => {
       .sort({ date: -1 })
       .limit(1)
       .find();
-    latestArticle.value = fetchedData;
+    
+    // Ensure the latest article has tags
+    latestArticle.value = fetchedData.map((item: any) => ({
+      ...item,
+      tags: item.tags || [],
+    }));
+    
     console.log('Latest Article:', latestArticle.value);
   } catch (error) {
     console.error('Error fetching latest article:', error);
@@ -389,6 +444,8 @@ const canLoadMore = computed(() => displayedArticles.value.length < articles.val
 
 .right-column {
   position: relative;
+  width: 300px; /* Adjust this value as needed */
+  flex-shrink: 0;
 }
 
 .featured-article {
@@ -472,6 +529,7 @@ const canLoadMore = computed(() => displayedArticles.value.length < articles.val
   padding: 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   min-height: 400px;
+  width: 100%;
 }
 
 .article-grid {
@@ -484,6 +542,7 @@ const canLoadMore = computed(() => displayedArticles.value.length < articles.val
   overflow-y: auto;
   padding-right: 15px;
   min-height: 300px;
+  width: 100%;
 }
 
 .article-card {
@@ -496,6 +555,8 @@ const canLoadMore = computed(() => displayedArticles.value.length < articles.val
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .article-card h3 {
@@ -723,6 +784,22 @@ const canLoadMore = computed(() => displayedArticles.value.length < articles.val
   color: var(--primary-color);
 }
 
+/* New Tag Styles */
+.tag {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.tags {
+  margin-top: 10px;
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
   .main-content {
@@ -933,5 +1010,63 @@ const canLoadMore = computed(() => displayedArticles.value.length < articles.val
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+.tag-filter-container {
+  margin-bottom: 20px;
+  border: 1px solid var(--primary-color);
+  border-radius: 30px;
+  padding: 5px;
+  background-color: #f0f0f0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tag-filter {
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) #f0f0f0;
+  width: 100%;
+}
+
+.tag-filter::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tag-filter::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 3px;
+}
+
+.tag-filter::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 3px;
+}
+
+.filter-tag {
+  display: inline-block;
+  background-color: white;
+  color: var(--primary-color);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 8px;
+  border: 1px solid var(--primary-color);
+  flex-shrink: 0;
+}
+
+.filter-tag:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.filter-tag.active {
+  background-color: var(--primary-color);
+  color: white;
 }
 </style>
