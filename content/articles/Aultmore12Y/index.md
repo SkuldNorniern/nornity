@@ -52,6 +52,7 @@ author: "Skuld Norniern"
 
   .tasting-notes {
     background-color: rgba(40, 40, 40, 0.7);
+    margin: 0 auto;
     padding: 30px;
     border-radius: 8px;
     margin-top: 40px;
@@ -136,8 +137,9 @@ author: "Skuld Norniern"
 
   .info-grid {
     display: grid;
+    margin: 0 auto;
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 20px;
+    gap: 10px;
     margin-top: 20px;
   }
   .info-item {
@@ -161,10 +163,33 @@ author: "Skuld Norniern"
 
   .tasting-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
   }
+
+  @media (max-width: 600px) {
+    .tasting-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .info-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .glass-article {
+      padding: 10px;
+    }
+
+    .title {
+      font-size: 2em;
+    }
+
+    .article-image {
+      max-width: 100%;
+    }
+  }
+
   .note-category {
     background-color: rgba(30, 30, 30, 0.6);
     border-radius: 8px;
