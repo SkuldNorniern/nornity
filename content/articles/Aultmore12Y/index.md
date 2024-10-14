@@ -16,9 +16,9 @@ author: "Skuld Norniern"
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
   .glass-article {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 40px;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
     font-family: 'Lato', sans-serif;
     color: #e0e0e0;
     line-height: 1.8;
@@ -138,7 +138,7 @@ author: "Skuld Norniern"
   .info-grid {
     display: grid;
     margin: 0 auto;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 10px;
     margin-top: 20px;
   }
@@ -148,6 +148,10 @@ author: "Skuld Norniern"
     border-radius: 8px;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100px;
   }
   .info-label {
     font-family: 'Playfair Display', serif;
@@ -158,7 +162,12 @@ author: "Skuld Norniern"
   .info-value {
     font-family: 'Lato', sans-serif;
     color: #e0e0e0;
-    font-size: 1.1em;
+    font-size: 1.3em;
+    line-height: 1.2;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .tasting-grid {
@@ -250,6 +259,37 @@ author: "Skuld Norniern"
   .rating-text {
     font-size: 1.1em;
     font-weight: bold;
+  }
+
+  @media (max-width: 600px) {
+    .info-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .info-item {
+      min-height: 80px;
+    }
+    .info-label {
+      font-size: 0.8em;
+    }
+    .info-value {
+      font-size: 0.9em;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .info-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .info-item {
+      min-height: 70px;
+      padding: 10px;
+    }
+    .info-label {
+      font-size: 0.75em;
+    }
+    .info-value {
+      font-size: 0.85em;
+    }
   }
 </style>
 
