@@ -1,8 +1,0 @@
-{
-  "scripts": {
-    "minify-css": "./scripts/minify-css.sh"
-  },
-  "devDependencies": {
-    "clean-css-cli": "^5.6.3"
-  }
-}
