@@ -11,7 +11,7 @@ draft: false
 
 First of all you need to go to the site where you can download the kernel file of Linux:
 
-**https://kernel.ubuntu.com/mainline/?C=N;O=D**
+**[Linux Kernel PPA](https://kernel.ubuntu.com/mainline/?C=N;O=D)**
 
 What you can see is the list of available Linux Kernel Version. What you need to do is pick the kernel that you want to use (for me I used v5.12-rc6).
 
