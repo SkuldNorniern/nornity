@@ -29,9 +29,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    // Load configuration
-    let config = config::Config::default();
+    // Load configuration from file, env, or defaults
+    let config = config::Config::from_file_or_env();
     debug!("Configuration loaded: {config:?}");
+
+    // Initialize global config instance
+    routes::get_config();
 
     // Initialize application
     app::init_app(&config).await?;

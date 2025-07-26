@@ -8,7 +8,7 @@ use tower_http::services::ServeDir;
 /// Build the application router
 pub fn build_app(config: &Config) -> Router {
     info!("Building application router");
-    let static_service = ServeDir::new(config.static_dir);
+    let static_service = ServeDir::new(&config.static_dir);
     debug!(
         "Static file service configured for directory: {}",
         config.static_dir

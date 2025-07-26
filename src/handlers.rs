@@ -274,8 +274,8 @@ pub async fn sitemap() -> Result<Response<String>, StatusCode> {
 
     let blog_store = get_blog_store();
     
-    // Determine base URL from environment or use default
-    let base_url = std::env::var("BASE_URL").unwrap_or_else(|_| "https://nornity.com".to_string());
+    // Get base URL from config (loaded from file/env/defaults)
+    let base_url = get_config().base_url.clone();
     
     match generate_sitemap_xml(&base_url, blog_store) {
         Ok(xml) => {
@@ -302,8 +302,8 @@ pub async fn robots_txt() -> Result<Response<String>, StatusCode> {
     info!("Serving robots.txt request");
     debug!("Robots.txt route accessed");
 
-    // Determine base URL from environment or use default
-    let base_url = std::env::var("BASE_URL").unwrap_or_else(|_| "https://nornity.com".to_string());
+    // Get base URL from config (loaded from file/env/defaults)
+    let base_url = get_config().base_url.clone();
     
     let robots_content = format!(
         "User-agent: *\n\
@@ -329,4 +329,8 @@ fn get_blog_store() -> &'static BlogStore {
 
 fn get_template_engine() -> &'static TemplateEngine {
     crate::routes::get_template_engine()
+}
+
+fn get_config() -> &'static crate::config::Config {
+    crate::routes::get_config()
 }
