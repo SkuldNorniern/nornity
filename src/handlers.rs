@@ -1,12 +1,13 @@
 use crate::blog::BlogStore;
 use crate::components::code_block::process_markdown_content;
 use crate::components::search::{SearchComponent, SearchResults, SearchResult, SortOption};
+use crate::components::sitemap::generate_sitemap_xml;
 use crate::template_helpers::{render_blog_preview, render_tags};
 use crate::templates::TemplateEngine;
 use axum::{
     extract::{Path, Query},
-    http::StatusCode,
-    response::Html,
+    http::{StatusCode, header},
+    response::{Html, Response},
 };
 use log::{debug, error, info, warn};
 use std::collections::HashMap;
@@ -264,6 +265,61 @@ pub async fn blog_post(Path(slug): Path<String>) -> Result<Html<String>, StatusC
             )))
         }
     }
+}
+
+/// Sitemap XML handler
+pub async fn sitemap() -> Result<Response<String>, StatusCode> {
+    info!("Serving sitemap.xml request");
+    debug!("Sitemap route accessed");
+
+    let blog_store = get_blog_store();
+    
+    // Determine base URL from environment or use default
+    let base_url = std::env::var("BASE_URL").unwrap_or_else(|_| "https://nornity.com".to_string());
+    
+    match generate_sitemap_xml(&base_url, blog_store) {
+        Ok(xml) => {
+            info!("Sitemap generated successfully");
+            debug!("Sitemap XML length: {} chars", xml.len());
+            
+            let response = Response::builder()
+                .status(StatusCode::OK)
+                .header(header::CONTENT_TYPE, "application/xml; charset=utf-8")
+                .body(xml)
+                .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            
+            Ok(response)
+        }
+        Err(e) => {
+            error!("Failed to generate sitemap: {e}");
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+/// Robots.txt handler
+pub async fn robots_txt() -> Result<Response<String>, StatusCode> {
+    info!("Serving robots.txt request");
+    debug!("Robots.txt route accessed");
+
+    // Determine base URL from environment or use default
+    let base_url = std::env::var("BASE_URL").unwrap_or_else(|_| "https://nornity.com".to_string());
+    
+    let robots_content = format!(
+        "User-agent: *\n\
+         Allow: /\n\
+         \n\
+         Sitemap: {}/sitemap.xml\n",
+        base_url
+    );
+    
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .header(header::CONTENT_TYPE, "text/plain; charset=utf-8")
+        .body(robots_content)
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    
+    Ok(response)
 }
 
 // Helper functions to access global instances
