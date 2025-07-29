@@ -1,6 +1,17 @@
 # Nornity - OS Designer & Developer
 
-A modern, Apple-inspired personal website and blog built with Rust and Axum, featuring dynamic content loading and hot reload capabilities.
+A modern Apple-inspired personal website and blog built with Rust and Axum. It supports dynamic content loading and an optional hot-reload workflow for a smooth development experience.
+
+## Table of Contents
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Blog System](#blog-system)
+- [Project Structure](#project-structure)
+- [Development](#development)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ## Features
 
@@ -24,7 +35,7 @@ A modern, Apple-inspired personal website and blog built with Rust and Axum, fea
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd homepage
+cd nornity
 ```
 
 2. Run the development server:
@@ -107,56 +118,22 @@ The blog system automatically detects changes to markdown files in the `content/
 ## Project Structure
 
 ```
-homepage/
+nornity/
 ├── src/
 │   ├── main.rs          # Application entry point
-│   ├── routes.rs         # HTTP route handlers
+│   ├── routes.rs        # HTTP route handlers
 │   ├── blog.rs          # Blog system implementation
-│   └── logger.rs        # Custom logging implementation
+│   └── logger.rs        # Custom logging
+├── templates/           # HTML templates
 ├── static/
 │   └── css/
 │       └── style.css    # Main stylesheet
 ├── content/             # Blog posts (markdown files)
 ├── scripts/
-│   └── new_post.sh     # Helper script for creating posts
-└── Cargo.toml          # Rust dependencies
+│   └── new_post.sh      # Helper script for creating posts
+└── Cargo.toml           # Rust dependencies
 ```
 
-## Customization
-
-### Colors
-
-The color scheme is defined in `static/css/style.css` using CSS custom properties:
-
-```css
-:root {
-    --primary-color: #6667ab;
-    --primary-dark: #4b4c7a;
-    --secondary-color: #8b8cc7;
-    /* ... more colors */
-}
-```
-
-### Dark Mode
-
-Dark mode is automatically enabled based on system preference. Colors are defined in the `@media (prefers-color-scheme: dark)` section of the CSS.
-
-### Adding New Routes
-
-Add new routes in `src/routes.rs`:
-
-```rust
-pub async fn new_route() -> Html<String> {
-    // Your route handler
-    Html("Your content".to_string())
-}
-```
-
-Then register the route in `src/main.rs`:
-
-```rust
-.route("/new-route", get(new_route))
-```
 
 ## Development
 
@@ -184,16 +161,6 @@ cargo fmt
 
 ## Deployment
 
-### Local Development
-
-```bash
-# With hot reload
-cargo run --features hot-reload
-
-# Without hot reload
-cargo run
-```
-
 ### Production
 
 1. Build the release version:
@@ -206,24 +173,7 @@ cargo build --release
 ./target/release/nornity
 ```
 
-### Docker (Optional)
-
-Create a `Dockerfile`:
-
-```dockerfile
-FROM rust:1.70 as builder
-WORKDIR /app
-COPY . .
-RUN cargo build --release
-
-FROM debian:bullseye-slim
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/nornity /usr/local/bin/
-COPY --from=builder /app/content /app/content
-COPY --from=builder /app/static /app/static
-EXPOSE 5000
-CMD ["nornity"]
-```
+After building, copy the `content`, `static`, and `templates` directories along with the binary to your server. Run the binary from that location.
 
 ## Contributing
 
@@ -241,4 +191,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - Built with [Axum](https://github.com/tokio-rs/axum) web framework
 - Styled with modern CSS and Apple-inspired design principles
-- Markdown processing with [pulldown-cmark](https://github.com/raphlinus/pulldown-cmark) 
+- Markdown processing with [pulldown-cmark](https://github.com/raphlinus/pulldown-cmark)
