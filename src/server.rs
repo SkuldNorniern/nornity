@@ -20,9 +20,10 @@ pub fn build_app(config: &Config) -> Router {
         .route("/blog/{slug}", get(handlers::blog_post))
         .route("/sitemap.xml", get(handlers::sitemap))
         .route("/robots.txt", get(handlers::robots_txt))
+        .route("/rss.xml", get(handlers::rss_feed))
         .nest_service("/static", static_service);
 
-    info!("Router configured with {} routes", 5);
+    info!("Router configured with {} routes", 6);
     router
 }
 

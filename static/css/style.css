@@ -1968,8 +1968,61 @@ section {
     border-top: 1px solid var(--border-color);
 }
 
-.footer-content p {
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.footer-left p {
     color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    margin: 0;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+}
+
+.rss-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-normal);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rss-link:hover {
+    color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.footer .rss-link .footer-rss-icon {
+    width: 12px !important;
+    height: 12px !important;
+    max-width: 12px !important;
+    max-height: 12px !important;
+    display: inline-block !important;
+    transition: transform var(--transition-normal);
+}
+
+.footer .rss-link:hover .footer-rss-icon {
+    transform: scale(1.1);
+}
+
+.rss-text {
+    font-weight: 500;
 }
 
 /* Responsive Design */
@@ -2671,5 +2724,27 @@ html {
     .pagination-link.prev,
     .pagination-link.next {
         min-width: 70px;
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-md);
+    }
+    
+    .footer-left p {
+        text-align: center;
+    }
+    
+    .rss-link {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: var(--font-size-base);
+    }
+    
+    .footer .rss-link .footer-rss-icon {
+        width: 14px !important;
+        height: 14px !important;
+        max-width: 14px !important;
+        max-height: 14px !important;
     }
 } 

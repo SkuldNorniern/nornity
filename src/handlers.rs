@@ -2,6 +2,7 @@ use crate::blog::BlogStore;
 use crate::components::code_block::process_markdown_content;
 use crate::components::search::{SearchComponent, SearchResults, SearchResult, SortOption};
 use crate::components::sitemap::generate_sitemap_xml;
+use crate::components::rss::generate_rss_feed_xml;
 use crate::template_helpers::{render_blog_preview, render_tags};
 use crate::templates::TemplateEngine;
 use axum::{
@@ -309,8 +310,9 @@ pub async fn robots_txt() -> Result<Response<String>, StatusCode> {
         "User-agent: *\n\
          Allow: /\n\
          \n\
-         Sitemap: {}/sitemap.xml\n",
-        base_url
+         Sitemap: {}/sitemap.xml\n\
+         RSS: {}/rss.xml\n",
+        base_url, base_url
     );
     
     let response = Response::builder()
@@ -320,6 +322,42 @@ pub async fn robots_txt() -> Result<Response<String>, StatusCode> {
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     
     Ok(response)
+}
+
+/// RSS feed handler
+pub async fn rss_feed() -> Result<Response<String>, StatusCode> {
+    info!("Serving RSS feed request");
+    debug!("RSS feed route accessed");
+
+    let blog_store = get_blog_store();
+    
+    // Get base URL from config (loaded from file/env/defaults)
+    let base_url = get_config().base_url.clone();
+    
+    match generate_rss_feed_xml(
+        &base_url,
+        "Nornity - OS Designer & Developer",
+        "OS Designer & Developer specializing in systems programming, compiler design, and low-level development.",
+        "Nornity",
+        blog_store,
+    ) {
+        Ok(xml) => {
+            info!("RSS feed generated successfully");
+            debug!("RSS feed XML length: {} chars", xml.len());
+            
+            let response = Response::builder()
+                .status(StatusCode::OK)
+                .header(header::CONTENT_TYPE, "application/rss+xml; charset=utf-8")
+                .body(xml)
+                .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            
+            Ok(response)
+        }
+        Err(e) => {
+            error!("Failed to generate RSS feed: {e}");
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
 }
 
 // Helper functions to access global instances

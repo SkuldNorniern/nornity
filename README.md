@@ -9,7 +9,7 @@ A modern, Apple-inspired personal website and blog built with Rust and Axum.
 - **Hot Reload**: Automatic content updates during development
 - **Server-side Search**: Full-text search and tag filtering
 - **Dark Mode**: Automatic dark mode support
-- **SEO Ready**: Built-in sitemap.xml and robots.txt
+- **SEO Ready**: Built-in sitemap.xml, robots.txt, and RSS feed
 - **Configuration**: Flexible config via files or environment variables
 
 ## Quick Start

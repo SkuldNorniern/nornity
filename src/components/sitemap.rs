@@ -88,6 +88,14 @@ impl SitemapGenerator {
             change_frequency: ChangeFrequency::Daily,
             priority: 0.8,
         });
+        
+        // RSS feed
+        entries.push(SitemapEntry {
+            url: format!("{}/rss.xml", self.base_url),
+            last_modified: now,
+            change_frequency: ChangeFrequency::Daily,
+            priority: 0.7,
+        });
     }
 
     /// Add blog posts to the sitemap
