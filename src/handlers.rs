@@ -310,9 +310,8 @@ pub async fn robots_txt() -> Result<Response<String>, StatusCode> {
         "User-agent: *\n\
          Allow: /\n\
          \n\
-         Sitemap: {}/sitemap.xml\n\
-         RSS: {}/rss.xml\n",
-        base_url, base_url
+         Sitemap: {}/sitemap.xml\n",
+        base_url
     );
     
     let response = Response::builder()
