@@ -21,4 +21,41 @@
   color: #666;
   font-size: 0.9rem;
   margin-top: 0.5rem;
+}
+
+/* Improve small-screen readability: reduce horizontal padding and widen content */
+@media (max-width: 640px) {
+  .blog-post {
+    padding: var(--spacing-lg) var(--spacing-sm, 12px);
+  }
+  .blog-post .container {
+    padding-left: var(--spacing-sm, 12px);
+    padding-right: var(--spacing-sm, 12px);
+  }
+  .blog-post .post-content {
+    max-width: 100%;
+    padding: var(--spacing-md) 0;
+    font-size: 1.02rem;
+    line-height: 1.7;
+  }
+  .blog-post .post-header h1 {
+    font-size: 1.6rem;
+    line-height: 1.25;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 420px) {
+  .blog-post {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .blog-post .container {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .blog-post .post-content {
+    font-size: 1.04rem;
+    line-height: 1.75;
+  }
 } 
