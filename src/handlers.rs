@@ -1,8 +1,8 @@
 use crate::blog::BlogStore;
 use crate::components::code_block::process_markdown_content;
-use crate::components::search::{SearchComponent, SearchResults, SearchResult, SortOption};
-use crate::components::sitemap::generate_sitemap_xml;
 use crate::components::rss::generate_rss_feed_xml;
+use crate::components::search::{SearchComponent, SearchResult, SearchResults, SortOption};
+use crate::components::sitemap::generate_sitemap_xml;
 use crate::template_helpers::{render_blog_preview, render_tags};
 use crate::templates::TemplateEngine;
 use axum::{
@@ -68,7 +68,10 @@ pub async fn homepage() -> Html<String> {
 }
 
 /// Blog list handler with server-side search and tag filtering
-pub async fn blog_list(Query(params): Query<HashMap<String, String>>, req: axum::http::Request<axum::body::Body>) -> Html<String> {
+pub async fn blog_list(
+    Query(params): Query<HashMap<String, String>>,
+    req: axum::http::Request<axum::body::Body>,
+) -> Html<String> {
     info!("Serving blog list page");
     debug!("Blog list query parameters: {params:?}");
 
@@ -87,16 +90,21 @@ pub async fn blog_list(Query(params): Query<HashMap<String, String>>, req: axum:
     // Apply filters
     let mut posts = if !search_config.selected_tags.is_empty() {
         info!("Filtering posts by tags: {:?}", search_config.selected_tags);
-        
+
         // For multiple tags, we need to find posts that have ALL selected tags
         let mut filtered_posts = total_posts;
         for tag in &search_config.selected_tags {
             let tag_posts = blog_store.get_posts_by_tag(tag);
             // Keep only posts that exist in both current filtered and tag posts
-            filtered_posts.retain(|post| tag_posts.iter().any(|tag_post| tag_post.slug == post.slug));
+            filtered_posts
+                .retain(|post| tag_posts.iter().any(|tag_post| tag_post.slug == post.slug));
         }
-        
-        debug!("Found {} posts with all tags {:?}", filtered_posts.len(), search_config.selected_tags);
+
+        debug!(
+            "Found {} posts with all tags {:?}",
+            filtered_posts.len(),
+            search_config.selected_tags
+        );
         filtered_posts
     } else {
         debug!("No tag filter applied, getting all posts");
@@ -122,7 +130,7 @@ pub async fn blog_list(Query(params): Query<HashMap<String, String>>, req: axum:
     posts.sort_by(|a, b| match search_config.sort_by {
         SortOption::DateNewest => b.meta.published_at.cmp(&a.meta.published_at),
         SortOption::DateOldest => a.meta.published_at.cmp(&b.meta.published_at),
-        SortOption::Title => a.title().cmp(&b.title()),
+        SortOption::Title => a.title().cmp(b.title()),
         SortOption::Relevance => {
             // For relevance, we'll keep the current order (search results first)
             std::cmp::Ordering::Equal
@@ -180,7 +188,10 @@ pub async fn blog_list(Query(params): Query<HashMap<String, String>>, req: axum:
     let tag_cloud = SearchComponent::render_tag_cloud(&all_tags, &search_config.selected_tags);
     let search_summary = SearchComponent::render_search_summary(&search_results);
 
-    debug!("Generated blog list HTML with {} posts", search_results.filtered_count);
+    debug!(
+        "Generated blog list HTML with {} posts",
+        search_results.filtered_count
+    );
     info!("Blog list page served successfully");
 
     let template_engine = get_template_engine();
@@ -228,7 +239,8 @@ pub async fn blog_post(Path(slug): Path<String>) -> Result<Html<String>, StatusC
 
     // Process markdown content with custom components and enhanced code blocks
     debug!("Rendering markdown content for post: {slug}");
-    let preprocessed = crate::components::custom_components::preprocess_markdown_with_components(&post.content);
+    let preprocessed =
+        crate::components::custom_components::preprocess_markdown_with_components(&post.content);
     let html_content = process_markdown_content(&preprocessed);
     debug!("Enhanced HTML content length: {} chars", html_content.len());
     debug!(
@@ -250,7 +262,10 @@ pub async fn blog_post(Path(slug): Path<String>) -> Result<Html<String>, StatusC
             post.title(),
             &content,
             post.excerpt(),
-            &["/static/css/code-blocks.min.css?v=3", "/static/css/blog-post.css?v=1"],
+            &[
+                "/static/css/code-blocks.min.css?v=3",
+                "/static/css/blog-post.css?v=1",
+            ],
         ) {
             Ok(html) => Ok(Html(html)),
             Err(e) => {
@@ -275,21 +290,21 @@ pub async fn sitemap() -> Result<Response<String>, StatusCode> {
     debug!("Sitemap route accessed");
 
     let blog_store = get_blog_store();
-    
+
     // Get base URL from config (loaded from file/env/defaults)
     let base_url = get_config().base_url.clone();
-    
+
     match generate_sitemap_xml(&base_url, blog_store) {
         Ok(xml) => {
             info!("Sitemap generated successfully");
             debug!("Sitemap XML length: {} chars", xml.len());
-            
+
             let response = Response::builder()
                 .status(StatusCode::OK)
                 .header(header::CONTENT_TYPE, "application/xml; charset=utf-8")
                 .body(xml)
                 .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-            
+
             Ok(response)
         }
         Err(e) => {
@@ -306,7 +321,7 @@ pub async fn robots_txt() -> Result<Response<String>, StatusCode> {
 
     // Get base URL from config (loaded from file/env/defaults)
     let base_url = get_config().base_url.clone();
-    
+
     let robots_content = format!(
         "User-agent: *\n\
          Allow: /\n\
@@ -314,13 +329,13 @@ pub async fn robots_txt() -> Result<Response<String>, StatusCode> {
          Sitemap: {}/sitemap.xml\n",
         base_url
     );
-    
+
     let response = Response::builder()
         .status(StatusCode::OK)
         .header(header::CONTENT_TYPE, "text/plain; charset=utf-8")
         .body(robots_content)
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    
+
     Ok(response)
 }
 
@@ -330,10 +345,10 @@ pub async fn rss_feed() -> Result<Response<String>, StatusCode> {
     debug!("RSS feed route accessed");
 
     let blog_store = get_blog_store();
-    
+
     // Get base URL from config (loaded from file/env/defaults)
     let base_url = get_config().base_url.clone();
-    
+
     match generate_rss_feed_xml(
         &base_url,
         "Nornity - OS Designer & Developer",
@@ -344,13 +359,13 @@ pub async fn rss_feed() -> Result<Response<String>, StatusCode> {
         Ok(xml) => {
             info!("RSS feed generated successfully");
             debug!("RSS feed XML length: {} chars", xml.len());
-            
+
             let response = Response::builder()
                 .status(StatusCode::OK)
                 .header(header::CONTENT_TYPE, "application/rss+xml; charset=utf-8")
                 .body(xml)
                 .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-            
+
             Ok(response)
         }
         Err(e) => {

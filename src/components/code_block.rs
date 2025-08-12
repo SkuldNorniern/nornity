@@ -21,7 +21,7 @@ pub enum TokenType {
     Whitespace,
     Newline,
     Other,
-    
+
     // Bash
     Variable,
     Command,
@@ -483,7 +483,7 @@ impl LanguageLexer for JavaScriptLexer {
                         lexer.consume_single_line_comment("//");
                     } else if lexer.peek_char(1) == Some('*') {
                         lexer.consume_multi_line_comment("/*", "*/");
-            } else {
+                    } else {
                         lexer.add_operator(ch.to_string());
                     }
                 }
@@ -785,9 +785,10 @@ impl LanguageLexer for CSSLexer {
                     }
                     let token_type = if keywords.contains(&value.as_str()) {
                         TokenType::Keyword
-                    } else if properties.contains(&value.as_str()) || property_prefixes
-                        .iter()
-                        .any(|prefix| value.starts_with(prefix))
+                    } else if properties.contains(&value.as_str())
+                        || property_prefixes
+                            .iter()
+                            .any(|prefix| value.starts_with(prefix))
                     {
                         TokenType::Type
                     } else if values.contains(&value.as_str()) {
@@ -831,10 +832,10 @@ impl LanguageLexer for BashLexer {
 
         // Common builtins to highlight as commands when in command position
         let builtins: &[&str] = &[
-            "echo", "printf", "read", "exit", "return", "cd", "pwd", "test", "[", "alias", "unalias",
-            "type", "hash", "help", "let", "mapfile", "readonly", "shift", "trap", "umask", "unset",
-            "export", "local", "declare", "typeset", "jobs", "bg", "fg", "kill", "wait", "dirs",
-            "pushd", "popd", ".", "source",
+            "echo", "printf", "read", "exit", "return", "cd", "pwd", "test", "[", "alias",
+            "unalias", "type", "hash", "help", "let", "mapfile", "readonly", "shift", "trap",
+            "umask", "unset", "export", "local", "declare", "typeset", "jobs", "bg", "fg", "kill",
+            "wait", "dirs", "pushd", "popd", ".", "source",
         ];
 
         let mut expecting_command = true; // start of file acts like start of line
@@ -849,7 +850,9 @@ impl LanguageLexer for BashLexer {
                 lexer.advance(); // '#'
                 lexer.advance(); // '!'
                 while let Some(c) = lexer.current_char() {
-                    if c == '\n' || c == '\r' { break; }
+                    if c == '\n' || c == '\r' {
+                        break;
+                    }
                     value.push(c);
                     lexer.advance();
                 }
@@ -884,7 +887,9 @@ impl LanguageLexer for BashLexer {
                     while let Some(c) = lexer.current_char() {
                         value.push(c);
                         lexer.advance();
-                        if c == '`' { break; }
+                        if c == '`' {
+                            break;
+                        }
                     }
                     lexer.add_token(TokenType::String, value, start, lexer.position);
                 }
@@ -901,7 +906,9 @@ impl LanguageLexer for BashLexer {
                             while let Some(c) = lexer.current_char() {
                                 value.push(c);
                                 lexer.advance();
-                                if c == '}' { break; }
+                                if c == '}' {
+                                    break;
+                                }
                             }
                         }
                         Some('(') => {
@@ -912,23 +919,33 @@ impl LanguageLexer for BashLexer {
                             while let Some(c) = lexer.current_char() {
                                 value.push(c);
                                 lexer.advance();
-                                if c == '(' { depth += 1; }
+                                if c == '(' {
+                                    depth += 1;
+                                }
                                 if c == ')' {
                                     depth -= 1;
-                                    if depth == 0 { break; }
+                                    if depth == 0 {
+                                        break;
+                                    }
                                 }
                             }
                         }
                         Some(c) => {
                             // simple variable name or special params
-                            if c.is_alphanumeric() || matches!(c, '_' | '@' | '*' | '#' | '?' | '!' | '-' | '$') {
+                            if c.is_alphanumeric()
+                                || matches!(c, '_' | '@' | '*' | '#' | '?' | '!' | '-' | '$')
+                            {
                                 value.push(c);
                                 lexer.advance();
                                 while let Some(nc) = lexer.current_char() {
-                                    if nc.is_alphanumeric() || matches!(nc, '_' | '@' | '*' | '#' | '?' | '!' | '-') {
+                                    if nc.is_alphanumeric()
+                                        || matches!(nc, '_' | '@' | '*' | '#' | '?' | '!' | '-')
+                                    {
                                         value.push(nc);
                                         lexer.advance();
-                                    } else { break; }
+                                    } else {
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -964,10 +981,15 @@ impl LanguageLexer for BashLexer {
                     }
 
                     // Function definition detection: name() pattern without space
-                    let is_function_name = lexer.current_char() == Some('(') && lexer.peek_char(1) == Some(')');
+                    let is_function_name =
+                        lexer.current_char() == Some('(') && lexer.peek_char(1) == Some(')');
 
                     if expecting_command || is_function_name || builtins.contains(&value.as_str()) {
-                        let token_type = if is_function_name { TokenType::Function } else { TokenType::Command };
+                        let token_type = if is_function_name {
+                            TokenType::Function
+                        } else {
+                            TokenType::Command
+                        };
                         lexer.add_token(token_type, value, start, lexer.position);
                         expecting_command = false;
                     } else if keywords.contains(&value.as_str()) {
@@ -1301,7 +1323,7 @@ impl HTMLParser {
     }
 
     pub fn extract_code_blocks(&mut self) -> Vec<(String, String)> {
-    let mut code_blocks = Vec::new();
+        let mut code_blocks = Vec::new();
 
         while self.position < self.content.len() {
             // Look for <pre><code
@@ -1430,9 +1452,9 @@ pub fn process_markdown_content(content: &str) -> String {
     let parser = pulldown_cmark::Parser::new_ext(content, pulldown_cmark::Options::all());
     let mut html_output = String::new();
     pulldown_cmark::html::push_html(&mut html_output, parser);
-    
+
     debug!("Markdown processed, HTML length: {}", html_output.len());
-    
+
     // Now enhance the HTML code blocks with syntax highlighting
     let enhanced_html = enhance_html_code_blocks(&html_output);
 
@@ -1512,18 +1534,17 @@ fn enhance_html_code_blocks(html: &str) -> String {
                 let code_block = CodeBlock::new(language.clone(), code_content.clone());
                 code_block.highlight()
             };
-        
-        let enhanced_html = format!(
+
+            let enhanced_html = format!(
                 r#"<pre data-language="{}" class="code-block-container"><code class="language-{}">{}</code></pre>"#,
                 display_language, language, final_content
-        );
-        
+            );
+
             // Replace the original with enhanced version
             result.replace_range(actual_start..end_pos, &enhanced_html);
             offset = actual_start + enhanced_html.len();
         }
     }
-    
+
     result
 }
- 

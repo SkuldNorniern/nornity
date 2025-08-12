@@ -52,11 +52,14 @@ pub struct SearchComponent;
 impl SearchComponent {
     /// Parse search parameters from query string
     pub fn parse_params(params: &HashMap<String, String>) -> SearchConfig {
-        let search_term = params.get("search").cloned().filter(|s| !s.trim().is_empty());
-        
+        let search_term = params
+            .get("search")
+            .cloned()
+            .filter(|s| !s.trim().is_empty());
+
         // Parse multiple tags from query parameters
         let mut selected_tags = Vec::new();
-        
+
         // Handle multiple tag parameters (tag=value1&tag=value2)
         // Since HashMap can only store one value per key, we need to parse the raw query string
         // For now, we'll use a different approach - we'll modify the handler to pass the raw query
@@ -65,14 +68,14 @@ impl SearchComponent {
                 selected_tags.push(value.clone());
             }
         }
-        
+
         let sort_by = params
             .get("sort")
-            .and_then(|s| match s.as_str() {
-                "date-oldest" => Some(SortOption::DateOldest),
-                "title" => Some(SortOption::Title),
-                "relevance" => Some(SortOption::Relevance),
-                _ => Some(SortOption::DateNewest),
+            .map(|s| match s.as_str() {
+                "date-oldest" => SortOption::DateOldest,
+                "title" => SortOption::Title,
+                "relevance" => SortOption::Relevance,
+                _ => SortOption::DateNewest,
             })
             .unwrap_or_default();
 
@@ -94,7 +97,7 @@ impl SearchComponent {
             if let Some((key, value)) = param.split_once('=') {
                 let key = key.trim();
                 let value = value.trim();
-                
+
                 match key {
                     "search" => {
                         if !value.is_empty() {
@@ -129,7 +132,7 @@ impl SearchComponent {
     /// Generate search form HTML
     pub fn render_search_form(config: &SearchConfig) -> String {
         let search_value = config.search_term.as_deref().unwrap_or("");
-        
+
         format!(
             r#"
             <form method="GET" action="/blog" class="search-form">
@@ -156,7 +159,10 @@ impl SearchComponent {
             {
                 let mut hidden_inputs = String::new();
                 for tag in &config.selected_tags {
-                    hidden_inputs.push_str(&format!(r#"<input type="hidden" name="tag" value="{}">"#, html_escape(tag)));
+                    hidden_inputs.push_str(&format!(
+                        r#"<input type="hidden" name="tag" value="{}">"#,
+                        html_escape(tag)
+                    ));
                 }
                 hidden_inputs
             }
@@ -173,7 +179,6 @@ impl SearchComponent {
             .map(|tag_name| {
                 let is_active = selected_tags.contains(tag_name);
                 let active_class = if is_active { " active" } else { "" };
-                
                 if is_active {
                     // If this tag is active, remove it from URL
                     format!(
@@ -206,11 +211,11 @@ impl SearchComponent {
     /// Generate search results summary
     pub fn render_search_summary(results: &SearchResults) -> String {
         let mut summary_parts = Vec::new();
-        
+
         if let Some(search_term) = &results.search_term {
             summary_parts.push(format!("search for '{}'", search_term));
         }
-        
+
         if !results.selected_tags.is_empty() {
             if results.selected_tags.len() == 1 {
                 summary_parts.push(format!("tagged '{}'", results.selected_tags[0]));
@@ -219,33 +224,35 @@ impl SearchComponent {
                 summary_parts.push(format!("tagged '{}'", tags_text));
             }
         }
-        
+
         let filter_text = if summary_parts.is_empty() {
             "all posts".to_string()
         } else {
             summary_parts.join(" and ")
         };
-        
+
         format!(
             r#"
             <div class="search-summary" role="status" aria-live="polite">
                 <p>Showing {} of {} posts ({})</p>
             </div>
             "#,
-            results.filtered_count,
-            results.total_count,
-            filter_text
+            results.filtered_count, results.total_count, filter_text
         )
     }
 
     /// Generate pagination controls
-    pub fn render_pagination(current_page: usize, total_pages: usize, config: &SearchConfig) -> String {
+    pub fn render_pagination(
+        current_page: usize,
+        total_pages: usize,
+        config: &SearchConfig,
+    ) -> String {
         if total_pages <= 1 {
             return String::new();
         }
 
         let mut pagination_links = Vec::new();
-        
+
         // Previous page
         if current_page > 1 {
             let prev_url = Self::build_pagination_url(current_page - 1, config);
@@ -254,11 +261,11 @@ impl SearchComponent {
                 prev_url
             ));
         }
-        
+
         // Page numbers
         let start_page = (current_page.saturating_sub(2)).max(1);
         let end_page = (current_page + 2).min(total_pages);
-        
+
         for page in start_page..=end_page {
             if page == current_page {
                 pagination_links.push(format!(
@@ -273,7 +280,7 @@ impl SearchComponent {
                 ));
             }
         }
-        
+
         // Next page
         if current_page < total_pages {
             let next_url = Self::build_pagination_url(current_page + 1, config);
@@ -282,7 +289,7 @@ impl SearchComponent {
                 next_url
             ));
         }
-        
+
         format!(
             r#"
             <nav class="pagination" role="navigation" aria-label="Search results pagination">
@@ -296,15 +303,15 @@ impl SearchComponent {
     /// Build URL for pagination with current search parameters
     fn build_pagination_url(page: usize, config: &SearchConfig) -> String {
         let mut params = Vec::new();
-        
+
         if let Some(search_term) = &config.search_term {
             params.push(format!("search={}", url_encode(search_term)));
         }
-        
+
         for tag in &config.selected_tags {
             params.push(format!("tag={}", url_encode(tag)));
         }
-        
+
         if config.sort_by != SortOption::DateNewest {
             let sort_value = match config.sort_by {
                 SortOption::DateOldest => "date-oldest",
@@ -314,11 +321,11 @@ impl SearchComponent {
             };
             params.push(format!("sort={}", sort_value));
         }
-        
+
         if page > 1 {
             params.push(format!("page={}", page));
         }
-        
+
         if params.is_empty() {
             "/blog".to_string()
         } else {
@@ -329,15 +336,15 @@ impl SearchComponent {
     /// Build URL with a new tag added
     fn build_url_with_tag(selected_tags: &[String], new_tag: &str) -> String {
         let mut params = Vec::new();
-        
+
         // Add existing tags
         for tag in selected_tags {
             params.push(format!("tag={}", url_encode(tag)));
         }
-        
+
         // Always add the new tag
         params.push(format!("tag={}", url_encode(new_tag)));
-        
+
         if params.is_empty() {
             "/blog".to_string()
         } else {
@@ -348,14 +355,14 @@ impl SearchComponent {
     /// Build URL with a tag removed
     fn build_url_without_tag(selected_tags: &[String], tag_to_remove: &str) -> String {
         let mut params = Vec::new();
-        
+
         // Add all tags except the one to remove
         for tag in selected_tags {
             if tag != tag_to_remove {
                 params.push(format!("tag={}", url_encode(tag)));
             }
         }
-        
+
         if params.is_empty() {
             "/blog".to_string()
         } else {
@@ -391,4 +398,4 @@ fn url_encode(input: &str) -> String {
         .replace("{", "%7B")
         .replace("}", "%7D")
         .replace("~", "%7E")
-} 
+}

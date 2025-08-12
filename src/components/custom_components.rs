@@ -44,9 +44,7 @@ fn try_parse_bracket_component(s: &str) -> Option<(usize, String)> {
         // Expect a required attribute "name" or first positional word as real component name
         // If attrs has "name", use it; else fallback to empty
         let mut attrs_clone = attrs.clone();
-        let real_name = attrs_clone
-            .remove("name")
-            .unwrap_or_else(|| String::new());
+        let real_name = attrs_clone.remove("name").unwrap_or_else(String::new);
         if real_name.is_empty() {
             // If name is missing, we cannot render
             return None;
@@ -54,7 +52,11 @@ fn try_parse_bracket_component(s: &str) -> Option<(usize, String)> {
         render_component(&real_name, &attrs_clone)?
     } else {
         // Direct component name like [[image ...]] or [[img ...]]
-        let comp = if name == "img" { "image" } else { name.as_str() };
+        let comp = if name == "img" {
+            "image"
+        } else {
+            name.as_str()
+        };
         render_component(comp, &attrs)?
     };
 
@@ -80,7 +82,7 @@ fn parse_identifier(s: &str) -> Option<(usize, String)> {
 
 fn parse_attributes_until_closing(
     s: &str,
-    closing: &str,
+    _closing: &str,
 ) -> Option<(usize, HashMap<String, String>)> {
     let mut i = 0;
     let bytes = s.as_bytes();
@@ -93,7 +95,7 @@ fn parse_attributes_until_closing(
 
     loop {
         // Check for closing ]]
-        if s[i..].starts_with("]] ") || s[i..].starts_with("]]" ) {
+        if s[i..].starts_with("]] ") || s[i..].starts_with("]]") {
             // consume closing ]]
             if s[i..].starts_with("]] ") {
                 i += 3; // "]] "
@@ -169,4 +171,4 @@ fn parse_attributes_until_closing(
     }
 
     Some((i, attrs))
-} 
+}
