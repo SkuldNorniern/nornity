@@ -1,6 +1,6 @@
 ---
 title: "Airplay for Any Speakers"
-excerpt: "Brief description of the post content."
+excerpt: "Turn any speakers into AirPlay targets using a Raspberry Pi, NQPTP, and Shairport Sync—with setup steps, firewall rules, and verification."
 author: "Eira"
 tags: ["airplay", "iot"]
 published_at: "2025-08-12 23:20:14"
