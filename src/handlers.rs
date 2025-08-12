@@ -226,9 +226,10 @@ pub async fn blog_post(Path(slug): Path<String>) -> Result<Html<String>, StatusC
         }
     };
 
-    // Process markdown content with enhanced code blocks
+    // Process markdown content with custom components and enhanced code blocks
     debug!("Rendering markdown content for post: {slug}");
-    let html_content = process_markdown_content(&post.content);
+    let preprocessed = crate::components::custom_components::preprocess_markdown_with_components(&post.content);
+    let html_content = process_markdown_content(&preprocessed);
     debug!("Enhanced HTML content length: {} chars", html_content.len());
     debug!(
         "Markdown rendered successfully, content length: {} chars",
@@ -245,11 +246,11 @@ pub async fn blog_post(Path(slug): Path<String>) -> Result<Html<String>, StatusC
     variables.insert("post_tags".to_string(), render_tags(post.tags()));
 
     match template_engine.render("blog_post.html", &variables) {
-        Ok(content) => match template_engine.render_base_with_meta_and_css(
+        Ok(content) => match template_engine.render_base_with_meta_and_css_list(
             post.title(),
             &content,
             post.excerpt(),
-            Some("/static/css/code-blocks.min.css?v=3"),
+            &["/static/css/code-blocks.min.css?v=3", "/static/css/blog-post.css?v=1"],
         ) {
             Ok(html) => Ok(Html(html)),
             Err(e) => {

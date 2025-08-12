@@ -133,4 +133,31 @@ impl TemplateEngine {
 
         self.render("base.html", &variables)
     }
+
+    /// Render the base template with content, meta description, and multiple additional CSS files
+    pub fn render_base_with_meta_and_css_list(
+        &self,
+        title: &str,
+        content: &str,
+        meta_description: &str,
+        additional_css: &[&str],
+    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+        let mut variables = HashMap::new();
+        variables.insert("title".to_string(), title.to_string());
+        variables.insert("content".to_string(), content.to_string());
+        variables.insert("meta_description".to_string(), meta_description.to_string());
+
+        let css_links = if additional_css.is_empty() {
+            String::new()
+        } else {
+            additional_css
+                .iter()
+                .map(|css| format!("<link rel=\"stylesheet\" href=\"{}\">", css))
+                .collect::<Vec<_>>()
+                .join("\n")
+        };
+        variables.insert("additional_css".to_string(), css_links);
+
+        self.render("base.html", &variables)
+    }
 }

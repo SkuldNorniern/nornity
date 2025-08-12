@@ -1,0 +1,24 @@
+/* Blog post specific overrides */
+.post-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+}
+
+.image-figure {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.image-figure img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.image-figure figcaption {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+} 

@@ -58,14 +58,50 @@ fn main() {
 
 ### Supported Date Formats
 
-- `"2024-01-20 14:30:00"` - Full datetime
-- `"2024-01-20"` - Date only
-- `"January 20, 2024"` - Natural language
+- "2024-01-20 14:30:00" - Full datetime
+- "2024-01-20" - Date only
+- "January 20, 2024" - Natural language
 - `1705758600` - Unix timestamp
 
 ### Hot Reload
 
 Changes to markdown files automatically reload. Use `cargo run --features hot-reload` for development.
+
+## Custom Components (Shortcodes)
+
+Shortcodes provide reusable, markdown-friendly UI elements without HTML. Use double brackets `[[...]]` to insert components.
+
+- General form: `[[component-name key="value" key2="value2"]]`
+- Keys support quoted or unquoted values (quoted recommended).
+
+### Image
+
+Renders a responsive figure with optional caption, contained within the post.
+
+- Usage:
+
+```markdown
+[[image src="/static/assets/image/posts/your-post/your-image.jpg" alt="Descriptive alt" caption="Optional caption"]]
+```
+
+- Aliases:
+  - `[[img ...]]` is equivalent to `[[image ...]]`
+
+- Attributes:
+  - `src` (required): Path under `/static` (e.g., `/static/assets/...`).
+  - `alt` (recommended): Accessible alt text.
+  - `caption` (optional): Text shown under the image.
+  - `loading` (optional, default: `lazy`)
+  - `decoding` (optional, default: `async`)
+
+- Styling:
+  - Images are constrained by `.post-content` and `.image-figure` via `static/css/blog-post.css`.
+
+### Extending shortcodes
+
+- Add renderers in `src/components/ui.rs` (e.g., `render_responsive_image`).
+- Register the component name inside `render_component`.
+- Parsing is handled by `src/components/custom_components.rs` which converts `[[...]]` into HTML before markdown is rendered.
 
 ## Configuration
 
@@ -98,7 +134,7 @@ nornity/
 │   ├── handlers.rs          # HTTP handlers
 │   ├── blog.rs              # Blog system
 │   ├── config.rs            # Configuration
-│   └── components/          # Syntax highlighting, search, sitemap
+│   └── components/          # Syntax highlighting, search, sitemap, shortcodes
 ├── static/css/              # Stylesheets
 ├── templates/               # HTML templates
 ├── content/                 # Blog posts
