@@ -1,17 +1,15 @@
 ---
 title: "Airplay for Any Speakers"
 excerpt: "Brief description of the post content."
-author: "Nornity"
+author: "Eira"
 tags: ["airplay", "iot"]
 published_at: "2025-08-12 23:20:14"
 draft: false
 ---
 
-# AirPlay for Any Speakers
+I use Apple Home as my primary home ecosystem and have a HomePod mini, which is fine-but my Kanto YU2s sound better. Since I have a Raspberry Pi 4 already hosting this blog, I'll use it to add AirPlay to any speakers via Shairport Sync (+ NQPTP for proper timing).
 
-I use Apple Home as my primary home ecosystem and have a HomePod mini, which is fine—but my Kanto YU2s sound better. Since I have a Raspberry Pi 4 already hosting this blog, I’ll use it to add AirPlay to any speakers via Shairport Sync (+ NQPTP for proper timing).
-
-> Note: My Raspberry Pi uses wired Ethernet. If you’re on Wi‑Fi, consider disabling Wi‑Fi power saving to avoid timeouts.
+> Note: My Raspberry Pi uses wired Ethernet. If you're on Wi-Fi, consider disabling Wi-Fi power saving to avoid timeouts.
 
 ## Prerequisites
 
@@ -67,7 +65,7 @@ sudo systemctl enable --now shairport-sync
 
 ## Firewall (UFW)
 
-If you use UFW, open the following ports used by AirPlay/RAOP and discovery:
+If you use UFW, open the following ports used by AirPlay and discovery:
 
 ```bash
 sudo ufw allow 319:320/udp     # PTP (timing)
@@ -91,7 +89,7 @@ systemctl status shairport-sync --no-pager
 journalctl -u shairport-sync -n 50 --no-pager
 ```
 
-On iOS or macOS, open the AirPlay picker (Control Center → AirPlay) and look for your Raspberry Pi device. Select it and play audio.
+On iOS or macOS, open the AirPlay picker (Control Center -> AirPlay) and look for your Raspberry Pi device. Select it and play audio.
 
 Here is the image for the rpi(mokapot) detected on the AirPlay list
 
