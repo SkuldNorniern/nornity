@@ -375,6 +375,63 @@ pub async fn rss_feed() -> Result<Response<String>, StatusCode> {
     }
 }
 
+/// 404 Not Found handler
+pub async fn not_found() -> Html<String> {
+    info!("Serving 404 page");
+    debug!("404 route accessed");
+
+    let blog_store = get_blog_store();
+    let recent_posts = blog_store.get_recent_posts(3);
+    debug!("Retrieved {} recent posts for 404 page", recent_posts.len());
+
+    // Generate recent posts suggestions for the 404 page
+    let posts_html = recent_posts
+        .iter()
+        .map(|post| {
+            debug!("Processing post for 404 page: {}", post.slug);
+            format!(
+                r#"<div class="suggested-post">
+                    <a href="/blog/{}" class="suggested-post-link">
+                        <h4 class="suggested-post-title">{}</h4>
+                        <p class="suggested-post-excerpt">{}</p>
+                        <span class="suggested-post-date">{}</span>
+                    </a>
+                </div>"#,
+                post.slug,
+                post.title(),
+                post.excerpt(),
+                post.formatted_date()
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let template_engine = get_template_engine();
+    let mut variables = HashMap::new();
+    variables.insert("recent_posts_suggestion".to_string(), posts_html);
+
+    match template_engine.render("404.html", &variables) {
+        Ok(content) => {
+            match template_engine.render_base_with_meta_and_css_list(
+                "Page Not Found - Nornity",
+                &content,
+                "The page you're looking for doesn't exist. Explore our blog posts or return to the homepage.",
+                &["/static/css/404.css"]
+            ) {
+                Ok(html) => Html(html),
+                Err(e) => {
+                    error!("Failed to render 404 base template: {e}");
+                    Html(format!("<h1>404 - Page Not Found</h1><p>Failed to render page: {e}</p>"))
+                }
+            }
+        }
+        Err(e) => {
+            error!("Failed to render 404 template: {e}");
+            Html(format!("<h1>404 - Page Not Found</h1><p>Failed to render page: {e}</p>"))
+        }
+    }
+}
+
 // Helper functions to access global instances
 fn get_blog_store() -> &'static BlogStore {
     crate::routes::get_blog_store()

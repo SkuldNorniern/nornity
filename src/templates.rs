@@ -18,6 +18,7 @@ impl TemplateEngine {
             "homepage.html",
             "blog_list.html",
             "blog_post.html",
+            "404.html",
             "components/fab.html",
             "components/footer.html",
         ];

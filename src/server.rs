@@ -21,7 +21,8 @@ pub fn build_app(config: &Config) -> Router {
         .route("/sitemap.xml", get(handlers::sitemap))
         .route("/robots.txt", get(handlers::robots_txt))
         .route("/rss.xml", get(handlers::rss_feed))
-        .nest_service("/static", static_service);
+        .nest_service("/static", static_service)
+        .fallback(handlers::not_found);
 
     info!("Router configured with {} routes", 6);
     router

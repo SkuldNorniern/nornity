@@ -2747,4 +2747,31 @@ html {
         max-width: 14px !important;
         max-height: 14px !important;
     }
-} 
+}
+
+/* 404 Error Page Styles - Moved to 404.css */
+
+/* 404 Error Page Styles - Moved to 404.css */
+
+.error-help h3 {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 var(--spacing-sm) 0;
+}
+
+.error-help p {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    margin: 0 0 var(--spacing-md) 0;
+}
+
+/* 404 Error Page Styles - Moved to 404.css */
+
+/* 404 Error Page Styles - Moved to 404.css */
+
+/* 404 Error Page Styles - Moved to 404.css */
+
+/* 404 Error Page Styles - Moved to 404.css */
+
+/* 404 Error Page Styles - Moved to 404.css */
