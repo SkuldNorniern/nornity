@@ -52,7 +52,9 @@
 <!-- Recent Blog Posts -->
 <section class="recent-posts">
     <div class="container">
-        <h2 class="section-title">Latest Thoughts</h2>
+        <div class="section-header">
+            <h2 class="section-title">Latest Thoughts</h2>
+        </div>
         <div class="blog-grid">
             {{recent_posts}}
         </div>
@@ -69,7 +71,9 @@
         <div class="work-grid">
             <div class="work-item">
                 <div class="work-image">
-                    <div class="placeholder-image"></div>
+                    <div class="work-logo-container work-logo-fallback">
+                        <span class="work-logo-text">F</span>
+                    </div>
                 </div>
                 <div class="work-content">
                     <div class="work-header">
@@ -84,12 +88,16 @@
                     <div class="work-tags">
                         <span class="tag"><span class="tag-inner">Rust</span></span>
                         <span class="tag"><span class="tag-inner">Netflow</span></span>
+                        <span class="tag"><span class="tag-inner">Network</span></span>
                     </div>
                 </div>
             </div>
+            
             <div class="work-item">
                 <div class="work-image">
-                    <div class="placeholder-image"></div>
+                    <div class="work-logo-container">
+                        <img src="/static/assets/image/projects/cetana_logo.png" alt="Cetana Logo" class="work-logo-image" />
+                    </div>
                 </div>
                 <div class="work-content">
                     <div class="work-header">
@@ -104,12 +112,16 @@
                     <div class="work-tags">
                         <span class="tag"><span class="tag-inner">Rust</span></span>
                         <span class="tag"><span class="tag-inner">Machine Learning</span></span>
+                        <span class="tag"><span class="tag-inner">AI</span></span>
                     </div>
                 </div>
             </div>
+            
             <div class="work-item">
                 <div class="work-image">
-                    <div class="placeholder-image"></div>
+                    <div class="work-logo-container">
+                        <img src="/static/assets/image/projects/lamina_logo.png" alt="Lamina Logo" class="work-logo-image" />
+                    </div>
                 </div>
                 <div class="work-content">
                     <div class="work-header">
@@ -120,6 +132,7 @@
                     <div class="work-tags">
                         <span class="tag"><span class="tag-inner">Rust</span></span>
                         <span class="tag"><span class="tag-inner">Compiler</span></span>
+                        <span class="tag"><span class="tag-inner">Systems</span></span>
                     </div>
                 </div>
             </div>
