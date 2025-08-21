@@ -4,6 +4,8 @@ mod python;
 mod css;
 mod bash;
 mod html;
+mod c;
+mod cpp;
 
 use html::HTMLLexer;
 use javascript::JavaScriptLexer;
@@ -11,6 +13,8 @@ use python::PythonLexer;
 use rust::RustLexer;
 use css::CSSLexer;
 use bash::BashLexer;
+use c::CLexer;
+use cpp::CppLexer;
 use log::debug;
 
 /// Code block component for syntax highlighting and HTML generation
@@ -298,6 +302,8 @@ impl LexerFactory {
         match language.to_lowercase().as_str() {
             "rust" | "rs" => Box::new(RustLexer),
             "javascript" | "js" => Box::new(JavaScriptLexer),
+            "c" => Box::new(CLexer),
+            "cpp" | "c++" => Box::new(CppLexer),
             "python" | "py" => Box::new(PythonLexer),
             "css" => Box::new(CSSLexer),
             "bash" | "shell" | "sh" => Box::new(BashLexer),
