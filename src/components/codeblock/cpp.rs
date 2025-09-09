@@ -37,6 +37,8 @@ impl LanguageLexer for CppLexer {
             "string", "vector", "map", "set", "unordered_map", "unordered_set", "list", "deque", "queue", "stack",
             "unique_ptr", "shared_ptr", "weak_ptr", "function", "tuple", "pair", "optional", "variant", "any",
             "chrono", "filesystem", "regex", "random", "thread", "mutex", "condition_variable", "future", "promise",
+            "array", "bitset", "multimap", "multiset", "priority_queue", "forward_list", "unordered_multimap",
+            "unordered_multiset", "valarray", "complex", "ratio", "atomic", "memory_order", "launch",
             
             // C types
             "int", "char", "float", "double", "long", "short", "unsigned", "signed", "void", "size_t", "ptrdiff_t",

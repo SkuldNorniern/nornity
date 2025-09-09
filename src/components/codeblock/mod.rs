@@ -6,6 +6,7 @@ mod bash;
 mod html;
 mod c;
 mod cpp;
+mod lamina;
 
 use html::HTMLLexer;
 use javascript::JavaScriptLexer;
@@ -15,6 +16,7 @@ use css::CSSLexer;
 use bash::BashLexer;
 use c::CLexer;
 use cpp::CppLexer;
+use lamina::LaminaLexer;
 use log::debug;
 
 /// Code block component for syntax highlighting and HTML generation
@@ -83,6 +85,22 @@ impl BaseLexer {
 
     pub fn peek_char(&self, offset: usize) -> Option<char> {
         self.input.get(self.position + offset).copied()
+    }
+
+    pub fn peek_multiple(&self, count: usize) -> Option<String> {
+        if self.position + count <= self.input.len() {
+            Some(self.input[self.position..self.position + count].iter().collect())
+        } else {
+            None
+        }
+    }
+
+    pub fn peek_multiple_back(&self, count: usize) -> Option<String> {
+        if self.position >= count {
+            Some(self.input[self.position - count + 1..=self.position].iter().collect())
+        } else {
+            None
+        }
     }
 
     pub fn advance(&mut self) {
@@ -197,13 +215,145 @@ impl BaseLexer {
     pub fn consume_number(&mut self) -> Option<String> {
         let start = self.position;
         let mut value = String::new();
+        let mut has_dot = false;
 
-        while let Some(c) = self.current_char() {
-            if c.is_ascii_digit() || c == '.' || c == '_' {
+        // Check for hex, binary, or octal prefix
+        if let Some(c) = self.current_char() {
+            if c == '0' {
                 value.push(c);
                 self.advance();
+                
+                if let Some(next_c) = self.current_char() {
+                    match next_c {
+                        'x' | 'X' => {
+                            // Hex number
+                            value.push(next_c);
+                            self.advance();
+                            while let Some(c) = self.current_char() {
+                                if c.is_ascii_hexdigit() || c == '_' {
+                                    value.push(c);
+                                    self.advance();
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                        'b' | 'B' => {
+                            // Binary number
+                            value.push(next_c);
+                            self.advance();
+                            while let Some(c) = self.current_char() {
+                                if c == '0' || c == '1' || c == '_' {
+                                    value.push(c);
+                                    self.advance();
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                        'o' | 'O' => {
+                            // Octal number
+                            value.push(next_c);
+                            self.advance();
+                            while let Some(c) = self.current_char() {
+                                if (c >= '0' && c <= '7') || c == '_' {
+                                    value.push(c);
+                                    self.advance();
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                        '0'..='9' | '.' => {
+                            // Decimal number
+                            while let Some(c) = self.current_char() {
+                                if c.is_ascii_digit() || c == '.' || c == '_' {
+                                    if c == '.' {
+                                        if has_dot {
+                                            break;
+                                        }
+                                        has_dot = true;
+                                    }
+                                    value.push(c);
+                                    self.advance();
+                                } else {
+                                    break;
+                                }
+                            }
+                            
+                            // Check for scientific notation
+                            if let Some(c) = self.current_char() {
+                                if c == 'e' || c == 'E' {
+                                    value.push(c);
+                                    self.advance();
+                                    
+                                    // Optional sign
+                                    if let Some(sign) = self.current_char() {
+                                        if sign == '+' || sign == '-' {
+                                            value.push(sign);
+                                            self.advance();
+                                        }
+                                    }
+                                    
+                                    // Exponent digits
+                                    while let Some(c) = self.current_char() {
+                                        if c.is_ascii_digit() || c == '_' {
+                                            value.push(c);
+                                            self.advance();
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        _ => {
+                            // Just a single 0
+                        }
+                    }
+                }
             } else {
-                break;
+                // Regular decimal number
+                while let Some(c) = self.current_char() {
+                    if c.is_ascii_digit() || c == '.' || c == '_' {
+                        if c == '.' {
+                            if has_dot {
+                                break;
+                            }
+                            has_dot = true;
+                        }
+                        value.push(c);
+                        self.advance();
+                    } else {
+                        break;
+                    }
+                }
+                
+                // Check for scientific notation
+                if let Some(c) = self.current_char() {
+                    if c == 'e' || c == 'E' {
+                        value.push(c);
+                        self.advance();
+                        
+                        // Optional sign
+                        if let Some(sign) = self.current_char() {
+                            if sign == '+' || sign == '-' {
+                                value.push(sign);
+                                self.advance();
+                            }
+                        }
+                        
+                        // Exponent digits
+                        while let Some(c) = self.current_char() {
+                            if c.is_ascii_digit() || c == '_' {
+                                value.push(c);
+                                self.advance();
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -223,7 +373,14 @@ impl BaseLexer {
         while let Some(c) = self.current_char() {
             value.push(c);
             self.advance();
-            if c == quote {
+            
+            // Handle escape sequences
+            if c == '\\' {
+                if let Some(escaped) = self.current_char() {
+                    value.push(escaped);
+                    self.advance();
+                }
+            } else if c == quote {
                 break;
             }
         }
@@ -264,13 +421,31 @@ impl BaseLexer {
             self.advance();
         }
 
+        let mut depth = 1; // Track nested comment depth
+
         while let Some(c) = self.current_char() {
             value.push(c);
             self.advance();
 
+            // Check for nested comment start
+            if start_prefix.len() > 0 && c == start_prefix.chars().next().unwrap() {
+                if let Some(next_chars) = self.peek_multiple(start_prefix.len()) {
+                    if next_chars == start_prefix {
+                        depth += 1;
+                    }
+                }
+            }
+
             // Check for end suffix
-            if value.ends_with(end_suffix) {
-                break;
+            if c == end_suffix.chars().last().unwrap() {
+                if let Some(prev_chars) = self.peek_multiple_back(end_suffix.len()) {
+                    if prev_chars == end_suffix {
+                        depth -= 1;
+                        if depth == 0 {
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -308,6 +483,7 @@ impl LexerFactory {
             "css" => Box::new(CSSLexer),
             "bash" | "shell" | "sh" => Box::new(BashLexer),
             "html" => Box::new(HTMLLexer),
+            "lamina" | "lamina-ir" => Box::new(LaminaLexer),
             _ => Box::new(JavaScriptLexer), // Default fallback
         }
     }

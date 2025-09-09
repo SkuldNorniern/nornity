@@ -24,7 +24,8 @@ impl LanguageLexer for BashLexer {
             "echo", "printf", "read", "exit", "return", "cd", "pwd", "test", "[", "alias",
             "unalias", "type", "hash", "help", "let", "mapfile", "readonly", "shift", "trap",
             "umask", "unset", "export", "local", "declare", "typeset", "jobs", "bg", "fg", "kill",
-            "wait", "dirs", "pushd", "popd", ".", "source",
+            "wait", "dirs", "pushd", "popd", ".", "source", "set", "unset", "env", "getopts",
+            "shift", "eval", "exec", "trap", "wait", "suspend", "caller", "command", "builtin",
         ];
 
         let mut expecting_command = true; // start of file acts like start of line

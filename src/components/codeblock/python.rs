@@ -16,18 +16,9 @@ impl LanguageLexer for PythonLexer {
     fn lex(&self, input: &str) -> Vec<Token> {
         let keywords = self.get_keywords();
         let types = [
-            "str",
-            "int",
-            "float",
-            "bool",
-            "list",
-            "dict",
-            "tuple",
-            "set",
-            "bytes",
-            "bytearray",
-            "complex",
-            "NoneType",
+            "str", "int", "float", "bool", "list", "dict", "tuple", "set", "bytes", "bytearray",
+            "complex", "NoneType", "Optional", "Union", "List", "Dict", "Tuple", "Set", "Any",
+            "Callable", "TypeVar", "Generic", "Protocol", "Literal", "Final", "TypedDict",
         ];
         let literals = ["True", "False", "None"];
         let builtins = [
