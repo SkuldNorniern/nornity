@@ -10,7 +10,7 @@ mod template_helpers;
 mod templates;
 mod watcher;
 
-use log::{debug, error, info, warn};
+use log::{debug, error, info};
 use logger::Logger;
 
 #[tokio::main]
@@ -19,9 +19,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match Logger::init() {
         Ok(_) => {
             info!("Logger initialized successfully");
-            debug!("This is a debug message test");
-            warn!("This is a warning message test");
-            error!("This is an error message test");
         }
         Err(e) => {
             eprintln!("Failed to initialize logger: {e}");
@@ -29,18 +26,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    // Load configuration from file, env, or defaults
-    let config = config::Config::from_file_or_env();
+    // Parse once. The handlers read the same instance through routes::get_config, so
+    // parsing here as well would duplicate every warning and leave two configs that
+    // only agree by coincidence.
+    let config = routes::get_config();
     debug!("Configuration loaded: {config:?}");
 
-    // Initialize global config instance
-    routes::get_config();
-
     // Initialize application
-    app::init_app(&config).await?;
+    app::init_app(config).await?;
 
     // Run server
-    if let Err(e) = server::run_server(config).await {
+    if let Err(e) = server::run_server(config.clone()).await {
         error!("Server error: {e}");
         return Err(e);
     }

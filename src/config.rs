@@ -1,3 +1,4 @@
+use log::warn;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::net::SocketAddr;
@@ -55,16 +56,20 @@ impl Config {
                         let key = key.trim();
                         let value = value.trim().trim_matches('"');
                         match key {
-                            "host" => {
-                                if let Some(parsed) = parse_host(value) {
-                                    config.host = parsed;
-                                }
-                            }
-                            "port" => {
-                                if let Ok(port) = value.parse() {
-                                    config.port = port;
-                                }
-                            }
+                            "host" => match parse_host(value) {
+                                Some(parsed) => config.host = parsed,
+                                None => warn!(
+                                    "Ignoring unparseable host {value:?} in {path}, keeping {:?}",
+                                    config.host
+                                ),
+                            },
+                            "port" => match value.parse() {
+                                Ok(port) => config.port = port,
+                                Err(e) => warn!(
+                                    "Ignoring unparseable port {value:?} in {path}: {e}, keeping {}",
+                                    config.port
+                                ),
+                            },
                             "template_dir" => {
                                 config.template_dir = value.to_string();
                             }
@@ -86,13 +91,21 @@ impl Config {
         }
         // Fallback to env if not set by file
         if let Ok(host) = std::env::var("HOST") {
-            if let Some(parsed) = parse_host(&host) {
-                config.host = parsed;
+            match parse_host(&host) {
+                Some(parsed) => config.host = parsed,
+                None => warn!(
+                    "Ignoring unparseable HOST {host:?}, keeping {:?}",
+                    config.host
+                ),
             }
         }
         if let Ok(port) = std::env::var("PORT") {
-            if let Ok(port) = port.parse() {
-                config.port = port;
+            match port.parse() {
+                Ok(parsed) => config.port = parsed,
+                Err(e) => warn!(
+                    "Ignoring unparseable PORT {port:?}: {e}, keeping {}",
+                    config.port
+                ),
             }
         }
         if let Ok(static_dir) = std::env::var("STATIC_DIR") {
