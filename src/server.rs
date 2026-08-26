@@ -1,9 +1,17 @@
 use crate::config::Config;
 use crate::handlers;
+use axum::http::{HeaderValue, header};
+use axum::serve::ListenerExt;
 use axum::{Router, routing::get};
 use log::{debug, error, info};
+use std::time::Duration;
 use tokio::net::TcpListener;
+use tower::ServiceBuilder;
+use tower_http::catch_panic::CatchPanicLayer;
+use tower_http::compression::CompressionLayer;
 use tower_http::services::ServeDir;
+use tower_http::set_header::SetResponseHeaderLayer;
+use tower_http::timeout::TimeoutLayer;
 
 /// Build the application router
 pub fn build_app(config: &Config) -> Router {
@@ -21,11 +29,64 @@ pub fn build_app(config: &Config) -> Router {
         .route("/sitemap.xml", get(handlers::sitemap))
         .route("/robots.txt", get(handlers::robots_txt))
         .route("/rss.xml", get(handlers::rss_feed))
-        .nest_service("/static", static_service)
-        .fallback(handlers::not_found);
+        .nest_service(
+            "/static",
+            ServiceBuilder::new()
+                .layer(SetResponseHeaderLayer::if_not_present(
+                    header::CACHE_CONTROL,
+                    HeaderValue::from_static("public, max-age=86400"),
+                ))
+                .service(static_service),
+        )
+        .fallback(handlers::not_found)
+        .layer(
+            ServiceBuilder::new()
+                // Outermost, so a stuck handler cannot hold a connection open forever.
+                .layer(TimeoutLayer::new(Duration::from_secs(15)))
+                // A panic in one handler returns 500 for that request instead of
+                // killing the connection and leaving the client with a reset.
+                .layer(CatchPanicLayer::new())
+                // Pages and CSS are tens of kilobytes. The default predicate skips
+                // already-compressed types and bodies too small to be worth it.
+                .layer(CompressionLayer::new()),
+        );
 
     info!("Router configured with {} routes", 6);
     router
+}
+
+/// Resolve when the process is asked to stop.
+///
+/// Without this, a deploy or a container stop kills the process mid-response. Waiting
+/// on both signals lets in-flight requests finish before the listener closes. SIGTERM
+/// is the one an orchestrator sends; Ctrl-C is the one a developer sends.
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        if let Err(e) = tokio::signal::ctrl_c().await {
+            error!("Failed to install Ctrl-C handler: {e}");
+        }
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        match tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()) {
+            Ok(mut signal) => {
+                signal.recv().await;
+            }
+            Err(e) => {
+                error!("Failed to install SIGTERM handler: {e}");
+                std::future::pending::<()>().await;
+            }
+        }
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => info!("Received Ctrl-C, shutting down"),
+        _ = terminate => info!("Received SIGTERM, shutting down"),
+    }
 }
 
 /// Run the server
@@ -42,7 +103,14 @@ pub async fn run_server(config: Config) -> Result<(), Box<dyn std::error::Error>
     let listener = match TcpListener::bind(addr).await {
         Ok(l) => {
             info!("TCP listener bound successfully to {addr}");
-            l
+            // Without this, a compressed response is written as several small chunks
+            // and Nagle holds the last one until the client's delayed ACK arrives,
+            // adding ~40 ms to every keep-alive request.
+            l.tap_io(|stream| {
+                if let Err(e) = stream.set_nodelay(true) {
+                    error!("Failed to set TCP_NODELAY: {e}");
+                }
+            })
         }
         Err(e) => {
             error!("Failed to bind TCP listener to {addr}: {e}");
@@ -53,7 +121,10 @@ pub async fn run_server(config: Config) -> Result<(), Box<dyn std::error::Error>
     info!("Starting HTTP server...");
     info!("Server is ready to accept connections on {addr}");
 
-    match axum::serve(listener, app).await {
+    match axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await
+    {
         Ok(_) => {
             info!("Server shutdown gracefully");
             Ok(())
