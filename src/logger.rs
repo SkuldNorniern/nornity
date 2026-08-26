@@ -1,5 +1,5 @@
 use chrono::Local;
-use log::{Level, LevelFilter, Log, Metadata, Record};
+use log::{Level, Log, Metadata, Record};
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::PathBuf;
@@ -121,7 +121,10 @@ impl Logger {
             write_to_file,
             enable_colors,
         );
-        log::set_max_level(LevelFilter::Trace);
+        // Match the static filter to the configured level. Leaving this at Trace made
+        // the log crate hand every debug! and trace! call to the logger with its
+        // arguments already formatted, only for enabled() to discard them.
+        log::set_max_level(severity.to_level_filter());
         log::set_boxed_logger(Box::new(logger))?;
         Ok(())
     }
