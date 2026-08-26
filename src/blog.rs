@@ -2,7 +2,7 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use log::{debug, error, info, warn};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use tokio::fs;
 
 /// Blog post metadata from YAML frontmatter
@@ -208,6 +208,25 @@ pub struct BlogStore {
 }
 
 impl BlogStore {
+    /// Read the posts, recovering if a previous holder panicked.
+    ///
+    /// These were `.unwrap()`. A panic anywhere under the lock poisoned it, and every
+    /// later read panicked in turn, so one bad post permanently took down the blog and
+    /// the homepage with it. The data behind the lock is a map that is only ever
+    /// replaced wholesale, so a poisoned guard is still safe to read.
+    fn read_posts(&self) -> RwLockReadGuard<'_, HashMap<String, BlogPost>> {
+        self.posts
+            .read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    /// Write the posts, recovering from poisoning for the same reason as `read_posts`.
+    fn write_posts(&self) -> RwLockWriteGuard<'_, HashMap<String, BlogPost>> {
+        self.posts
+            .write()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
     /// Create a new blog store
     pub fn new(content_dir: PathBuf) -> Self {
         Self {
@@ -256,11 +275,11 @@ impl BlogStore {
         }
 
         {
-            let mut posts_guard = self.posts.write().unwrap();
+            let mut posts_guard = self.write_posts();
             *posts_guard = posts;
         }
 
-        let post_count = self.posts.read().unwrap().len();
+        let post_count = self.read_posts().len();
         info!("Successfully loaded {post_count} blog posts");
         debug!("Blog store updated with {post_count} posts");
         Ok(())
@@ -268,7 +287,7 @@ impl BlogStore {
 
     /// Get all blog posts, sorted by publication date (newest first)
     pub fn get_all_posts(&self) -> Vec<BlogPost> {
-        let posts_guard = self.posts.read().unwrap();
+        let posts_guard = self.read_posts();
         let mut posts: Vec<BlogPost> = posts_guard.values().cloned().collect();
         posts.sort_by(|a, b| b.meta.published_at.cmp(&a.meta.published_at));
         posts
@@ -276,7 +295,7 @@ impl BlogStore {
 
     /// Get a specific blog post by slug
     pub fn get_post_by_slug(&self, slug: &str) -> Option<BlogPost> {
-        let posts_guard = self.posts.read().unwrap();
+        let posts_guard = self.read_posts();
         posts_guard.get(slug).cloned()
     }
 
@@ -297,7 +316,7 @@ impl BlogStore {
 
     /// Get all unique tags
     pub fn get_all_tags(&self) -> Vec<String> {
-        let posts_guard = self.posts.read().unwrap();
+        let posts_guard = self.read_posts();
         let mut tags: Vec<String> = posts_guard
             .values()
             .flat_map(|post| &post.meta.tags)
