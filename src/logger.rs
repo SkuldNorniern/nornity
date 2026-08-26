@@ -1,6 +1,6 @@
 use chrono::Local;
 use log::{Level, LevelFilter, Log, Metadata, Record};
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -57,7 +57,23 @@ impl Logger {
 
         if write_to_file {
             if let Some(path_ref) = path.as_ref() {
-                file = File::create(path_ref).ok().map(|f| Arc::new(Mutex::new(f)));
+                rotate_if_oversized(path_ref);
+                // Append rather than truncate: File::create would discard the log of
+                // whatever went wrong on the previous run, which is the run whose log
+                // is worth reading after a restart.
+                match OpenOptions::new().create(true).append(true).open(path_ref) {
+                    Ok(f) => file = Some(Arc::new(Mutex::new(f))),
+                    Err(e) => {
+                        // The logger is not installed yet, so this cannot go through
+                        // the log macros. Saying nothing would leave file logging
+                        // requested, silently absent, and stderr the only output.
+                        eprintln!(
+                            "nornity: file logging requested but {} could not be \
+                             opened: {e}. Continuing with stderr only.",
+                            path_ref.display()
+                        );
+                    }
+                }
             }
         }
 
@@ -160,5 +176,64 @@ impl Log for Logger {
     fn flush(&self) {
         let _ = std::io::stdout().flush();
         let _ = std::io::stderr().flush();
+    }
+}
+
+/// Largest log file kept before the current one is rolled aside.
+const MAX_LOG_BYTES: u64 = 16 * 1024 * 1024;
+
+/// Move the log aside once it passes [`MAX_LOG_BYTES`], keeping one previous file.
+///
+/// Appending without this would grow a single file without limit, and the default
+/// path is under /var/log where that eventually fills the disk. One generation is
+/// enough here because the service also logs to stderr, which the journal rotates.
+fn rotate_if_oversized(path: &std::path::Path) {
+    let too_big = std::fs::metadata(path).is_ok_and(|meta| meta.len() >= MAX_LOG_BYTES);
+    if !too_big {
+        return;
+    }
+
+    let mut previous = path.as_os_str().to_owned();
+    previous.push(".1");
+    // A failure here is not worth refusing to start over: the worst case is that the
+    // file keeps growing, and there is no logger yet to report it through.
+    let _ = std::fs::rename(path, previous);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write as _;
+
+    #[test]
+    fn a_small_log_is_left_alone() {
+        let dir = std::env::temp_dir().join("nornity-log-small");
+        let _ = std::fs::create_dir_all(&dir);
+        let path = dir.join("test.log");
+        let mut f = File::create(&path).expect("create test log");
+        writeln!(f, "short").expect("write test log");
+        drop(f);
+
+        rotate_if_oversized(&path);
+
+        assert!(path.exists());
+        assert!(!dir.join("test.log.1").exists());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn an_oversized_log_is_rolled_aside() {
+        let dir = std::env::temp_dir().join("nornity-log-big");
+        let _ = std::fs::create_dir_all(&dir);
+        let path = dir.join("test.log");
+        let f = File::create(&path).expect("create test log");
+        f.set_len(MAX_LOG_BYTES).expect("grow test log");
+        drop(f);
+
+        rotate_if_oversized(&path);
+
+        assert!(!path.exists());
+        assert!(dir.join("test.log.1").exists());
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }
