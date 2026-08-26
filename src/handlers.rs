@@ -376,7 +376,7 @@ pub async fn rss_feed() -> Result<Response<String>, StatusCode> {
 }
 
 /// 404 Not Found handler
-pub async fn not_found() -> Html<String> {
+pub async fn not_found() -> (StatusCode, Html<String>) {
     info!("Serving 404 page");
     debug!("404 route accessed");
 
@@ -418,16 +418,26 @@ pub async fn not_found() -> Html<String> {
                 "The page you're looking for doesn't exist. Explore our blog posts or return to the homepage.",
                 &["/static/css/404.css"]
             ) {
-                Ok(html) => Html(html),
+                Ok(html) => (StatusCode::NOT_FOUND, Html(html)),
                 Err(e) => {
                     error!("Failed to render 404 base template: {e}");
-                    Html(format!("<h1>404 - Page Not Found</h1><p>Failed to render page: {e}</p>"))
+                    (
+                        StatusCode::NOT_FOUND,
+                        Html(format!(
+                            "<h1>404 - Page Not Found</h1><p>Failed to render page: {e}</p>"
+                        )),
+                    )
                 }
             }
         }
         Err(e) => {
             error!("Failed to render 404 template: {e}");
-            Html(format!("<h1>404 - Page Not Found</h1><p>Failed to render page: {e}</p>"))
+            (
+                StatusCode::NOT_FOUND,
+                Html(format!(
+                    "<h1>404 - Page Not Found</h1><p>Failed to render page: {e}</p>"
+                )),
+            )
         }
     }
 }
