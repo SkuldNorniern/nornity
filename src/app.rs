@@ -36,6 +36,17 @@ pub async fn init_app(config: &Config) -> Result<(), Box<dyn std::error::Error>>
         config.host, config.port, config.static_dir, config.content_dir
     );
 
+    // A missing static directory is not a crash: pages still render, assets 404, and
+    // the site is quietly unstyled while the process looks healthy. Refuse to start.
+    verify_static_dir(&config.static_dir)?;
+    info!("Static assets served from {}", config.static_dir);
+
+    // Load templates now so a missing or malformed one is a startup failure with a
+    // clear message, not a panic inside the first request that needs it.
+    routes::init_template_engine(config)
+        .map_err(|e| -> Box<dyn std::error::Error> { e.to_string().into() })?;
+    info!("Templates loaded from {}", config.template_dir);
+
     // Initialize blog store
     init_blog_store(&config.content_dir).await?;
 
@@ -53,4 +64,41 @@ pub async fn init_app(config: &Config) -> Result<(), Box<dyn std::error::Error>>
 
     info!("Application initialization completed successfully");
     Ok(())
+}
+
+/// Fail startup if the static directory is missing, unreadable, or not a directory.
+fn verify_static_dir(static_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let path = std::path::Path::new(static_dir);
+    let cwd = std::env::current_dir()
+        .map(|p| p.display().to_string())
+        .unwrap_or_else(|_| "<unknown>".to_string());
+
+    match std::fs::metadata(path) {
+        Ok(meta) if meta.is_dir() => Ok(()),
+        Ok(_) => Err(format!(
+            "Static path {static_dir} is not a directory (working directory: {cwd}; \
+             set static_dir or STATIC_DIR)"
+        )
+        .into()),
+        Err(e) => Err(format!(
+            "Cannot read static directory {static_dir}: {e} (working directory: {cwd}; \
+             set static_dir or STATIC_DIR)"
+        )
+        .into()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn missing_static_directory_is_rejected() {
+        assert!(verify_static_dir("definitely-not-a-directory-here").is_err());
+    }
+
+    #[test]
+    fn a_file_is_not_accepted_as_the_static_directory() {
+        assert!(verify_static_dir("Cargo.toml").is_err());
+    }
 }

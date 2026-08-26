@@ -9,7 +9,11 @@ pub struct TemplateEngine {
 
 impl TemplateEngine {
     /// Create a new template engine and load all templates
-    pub fn new() -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+    /// Load every template from `template_dir`.
+    ///
+    /// Called once at startup so a missing or malformed template fails the boot with a
+    /// clear message, rather than panicking inside the first request that needs it.
+    pub fn new(template_dir: &str) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let mut templates = HashMap::new();
 
         // Load all template files
@@ -24,15 +28,23 @@ impl TemplateEngine {
         ];
 
         for template_name in template_files.iter() {
-            let template_path = format!("templates/{template_name}");
+            let template_path = format!("{template_dir}/{template_name}");
             match fs::read_to_string(&template_path) {
                 Ok(content) => {
                     templates.insert(template_name.to_string(), content);
                     debug!("Loaded template: {template_name}");
                 }
                 Err(e) => {
-                    error!("Failed to load template {template_name}: {e}");
-                    return Err(format!("Failed to load template {template_name}: {e}").into());
+                    error!("Failed to load template {template_path}: {e}");
+                    let cwd = std::env::current_dir()
+                        .map(|p| p.display().to_string())
+                        .unwrap_or_else(|_| "<unknown>".to_string());
+                    return Err(format!(
+                        "Failed to load template {template_path}: {e} \
+                         (working directory: {cwd}; set template_dir or TEMPLATE_DIR \
+                         to point at the templates directory)"
+                    )
+                    .into());
                 }
             }
         }
