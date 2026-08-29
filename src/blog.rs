@@ -208,19 +208,16 @@ pub struct BlogStore {
 }
 
 impl BlogStore {
-    /// Read the posts, recovering if a previous holder panicked.
-    ///
-    /// These were `.unwrap()`. A panic anywhere under the lock poisoned it, and every
-    /// later read panicked in turn, so one bad post permanently took down the blog and
-    /// the homepage with it. The data behind the lock is a map that is only ever
-    /// replaced wholesale, so a poisoned guard is still safe to read.
+    /// Recover a poisoned lock instead of panicking: one panic under it used to take
+    /// down the blog for the rest of the process. The map is only replaced wholesale,
+    /// so reading it after a panic is safe.
     fn read_posts(&self) -> RwLockReadGuard<'_, HashMap<String, BlogPost>> {
         self.posts
             .read()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 
-    /// Write the posts, recovering from poisoning for the same reason as `read_posts`.
+    /// Recovers from poisoning, same reason as `read_posts`.
     fn write_posts(&self) -> RwLockWriteGuard<'_, HashMap<String, BlogPost>> {
         self.posts
             .write()

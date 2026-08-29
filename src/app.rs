@@ -36,18 +36,13 @@ pub async fn init_app(config: &Config) -> Result<(), Box<dyn std::error::Error>>
         config.host, config.port, config.static_dir, config.content_dir
     );
 
-    // A missing static directory is not a crash: pages still render, assets 404, and
-    // the site is quietly unstyled while the process looks healthy. Refuse to start.
     verify_static_dir(&config.static_dir)?;
     info!("Static assets served from {}", config.static_dir);
 
-    // Load templates now so a missing or malformed one is a startup failure with a
-    // clear message, not a panic inside the first request that needs it.
     routes::init_template_engine(config)
         .map_err(|e| -> Box<dyn std::error::Error> { e.to_string().into() })?;
     info!("Templates loaded from {}", config.template_dir);
 
-    // Initialize blog store
     init_blog_store(&config.content_dir).await?;
 
     // Setup file watching for hot reload
@@ -67,6 +62,7 @@ pub async fn init_app(config: &Config) -> Result<(), Box<dyn std::error::Error>>
 }
 
 /// Fail startup if the static directory is missing, unreadable, or not a directory.
+/// Without this the site serves unstyled pages while the process looks healthy.
 fn verify_static_dir(static_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
     let path = std::path::Path::new(static_dir);
     let cwd = std::env::current_dir()

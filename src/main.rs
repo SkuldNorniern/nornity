@@ -15,7 +15,6 @@ use logger::Logger;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize logger FIRST, before any other code
     match Logger::init() {
         Ok(_) => {
             info!("Logger initialized successfully");
@@ -26,16 +25,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    // Parse once. The handlers read the same instance through routes::get_config, so
-    // parsing here as well would duplicate every warning and leave two configs that
-    // only agree by coincidence.
+    // handlers read this same instance, so parsing again here would give two configs
     let config = routes::get_config();
     debug!("Configuration loaded: {config:?}");
 
-    // Initialize application
     app::init_app(config).await?;
 
-    // Run server
     if let Err(e) = server::run_server(config.clone()).await {
         error!("Server error: {e}");
         return Err(e);

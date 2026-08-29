@@ -48,7 +48,6 @@ impl Logger {
         }
         let mut file = None;
 
-        // Create log directory if it doesn't exist
         if let Some(path_ref) = path.as_ref() {
             if let Some(parent) = path_ref.parent() {
                 let _ = std::fs::create_dir_all(parent);
@@ -58,15 +57,11 @@ impl Logger {
         if write_to_file {
             if let Some(path_ref) = path.as_ref() {
                 rotate_if_oversized(path_ref);
-                // Append rather than truncate: File::create would discard the log of
-                // whatever went wrong on the previous run, which is the run whose log
-                // is worth reading after a restart.
+                // append: truncating would discard the failed run's log on restart
                 match OpenOptions::new().create(true).append(true).open(path_ref) {
                     Ok(f) => file = Some(Arc::new(Mutex::new(f))),
                     Err(e) => {
-                        // The logger is not installed yet, so this cannot go through
-                        // the log macros. Saying nothing would leave file logging
-                        // requested, silently absent, and stderr the only output.
+                        // no logger installed yet, so this cannot use the macros
                         eprintln!(
                             "nornity: file logging requested but {} could not be \
                              opened: {e}. Continuing with stderr only.",
@@ -121,9 +116,7 @@ impl Logger {
             write_to_file,
             enable_colors,
         );
-        // Match the static filter to the configured level. Leaving this at Trace made
-        // the log crate hand every debug! and trace! call to the logger with its
-        // arguments already formatted, only for enabled() to discard them.
+        // at Trace the log crate formats every debug! only for enabled() to drop it
         log::set_max_level(severity.to_level_filter());
         log::set_boxed_logger(Box::new(logger))?;
         Ok(())
@@ -153,7 +146,6 @@ impl Log for Logger {
             format!("[{timestamp}] {level_str} {args}\n") // for Later debugging use {target} too 
         };
 
-        // Write to stdout/stderr
         if let Some(write_to_std) = &self.write_to_std {
             match write_to_std {
                 LogOutput::Stdout => {
@@ -165,7 +157,7 @@ impl Log for Logger {
             }
         }
 
-        // Write to file (without colors)
+        // file gets no colors
         if self.write_to_file {
             if let Some(file) = &self.file {
                 if let Ok(mut file_guard) = file.lock() {
@@ -185,11 +177,8 @@ impl Log for Logger {
 /// Largest log file kept before the current one is rolled aside.
 const MAX_LOG_BYTES: u64 = 16 * 1024 * 1024;
 
-/// Move the log aside once it passes [`MAX_LOG_BYTES`], keeping one previous file.
-///
-/// Appending without this would grow a single file without limit, and the default
-/// path is under /var/log where that eventually fills the disk. One generation is
-/// enough here because the service also logs to stderr, which the journal rotates.
+/// Roll the log aside past [`MAX_LOG_BYTES`], keeping one previous file. One is enough
+/// because stderr also goes to the journal, which rotates already.
 fn rotate_if_oversized(path: &std::path::Path) {
     let too_big = std::fs::metadata(path).is_ok_and(|meta| meta.len() >= MAX_LOG_BYTES);
     if !too_big {
@@ -198,8 +187,7 @@ fn rotate_if_oversized(path: &std::path::Path) {
 
     let mut previous = path.as_os_str().to_owned();
     previous.push(".1");
-    // A failure here is not worth refusing to start over: the worst case is that the
-    // file keeps growing, and there is no logger yet to report it through.
+    // worst case the file keeps growing, and there is no logger yet to say so
     let _ = std::fs::rename(path, previous);
 }
 

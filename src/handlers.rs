@@ -376,12 +376,8 @@ pub async fn rss_feed() -> Result<Response<String>, StatusCode> {
 }
 
 /// 404 Not Found handler
-/// Liveness check.
-///
-/// Deliberately renders nothing: it answers whether the process is up and serving,
-/// without depending on templates, the blog store, or disk. A monitor hitting the
-/// homepage instead cannot tell "process died" apart from "a post broke", and pays
-/// for a full render every time it asks.
+/// Renders nothing on purpose: says the process is serving without touching templates,
+/// the blog store, or disk.
 pub async fn health() -> (StatusCode, &'static str) {
     (StatusCode::OK, "ok")
 }
